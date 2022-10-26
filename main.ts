@@ -45,6 +45,15 @@ export default class MyPlugin extends Plugin {
 		document.body
 			.querySelector(ROOT_WORKSPACE_CLASS)
 			?.insertAdjacentElement("afterbegin", topWidget);
+
+		document.addEventListener("click", function (event) {
+			const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
+			if (activeLeaf) {
+				topWidget.style.visibility = "visible";
+			} else {
+				topWidget.style.visibility = "hidden";
+			}
+		});
 	}
 
 	async onload() {
