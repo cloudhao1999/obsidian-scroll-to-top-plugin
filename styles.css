@@ -31,4 +31,9 @@ If your plugin does not need CSS, delete this file.
 	margin-right: 3px;
 	border-radius: 3px;
 	font-size: initial !important;
+	background-color: var(--background-primary-alt);
 }
+
+#scrollToTop button.buttonItem:hover {
+	background-color: var(--background-secondary);
+  }
