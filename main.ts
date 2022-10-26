@@ -3,9 +3,9 @@ import { MarkdownView, Plugin, ButtonComponent } from 'obsidian';
 const ROOT_WORKSPACE_CLASS = '.mod-vertical.mod-root'
 
 export default class MyPlugin extends Plugin {
-	// 最大尝试次数
+	// max try times
 	maxValue: number = 100;
-	// 尝试次数
+	// current try times
 	currentValue: number = 0;
 
 	private scroolToTop() {
@@ -23,14 +23,14 @@ export default class MyPlugin extends Plugin {
 		this.currentValue++;
 
 		if (!document.body.querySelector(ROOT_WORKSPACE_CLASS)) {
-			// 尝试次数超过最大值，停止尝试
+			// stop when reach max try times
 			if (this.maxValue < this.currentValue) return
 			setTimeout(() => {
 				this.createButton();
 			}, 100)
 			return
 		}
-		// 创建一个圆形的按钮，在右下角
+		// create a button
 		let topWidget = createEl("div");
 		if (topWidget) {
 			topWidget.setAttribute("style", `position: absolute; bottom: 4.25em; right: 2em; z-index: 99;`);
