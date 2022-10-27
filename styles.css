@@ -28,6 +28,12 @@ settings:
         format: em
  
 */
+:root {
+	--scroll-to-bottom-bottom: 5.75em;
+	--scroll-to-bottom-left: 2.05em;
+	--scroll-to-top-bottom: 2.65em;
+	--scroll-to-top-left: 2.05em;
+}
 
 .div-scrollToTop {
 	position: absolute;
