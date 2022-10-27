@@ -1,11 +1,48 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
+/* @settings
+name: Scroll to Top Plugin
+id: obsidian-scroll-to-top-plugin
+settings:
+    - 
+        id: scroll-to-top-bottom
+        title: Scroll to top bottom position placement
+        type: variable-number
+        default: 5.75
+        format: em
+    - 
+        id: scroll-to-top-left
+        title: Scroll to top right position placement
+        type: variable-number
+        default: 2.05
+        format: em
+    - 
+        id: scroll-to-bottom-bottom
+        title: Scroll to bottom bottom position placement
+        type: variable-number
+        default: 2.65
+        format: em
+    -
+        id: scroll-to-bottom-left
+        title: Scroll to bottom right position placement
+        type: variable-number
+        default: 2.05
+        format: em
+ 
 */
+
+.div-scrollToTop {
+	position: absolute;
+	bottom: var(--scroll-to-top-bottom);
+	right: var(--scroll-to-top-left);
+	z-index: 99;
+}
+
+.div-scrollToBottom {
+	position: absolute;
+	bottom: var(--scroll-to-bottom-bottom);
+	right: var(--scroll-to-bottom-left);
+	z-index: 99;
+}
+
 #scrollToTop {
 	width: auto;
 	height: auto;
@@ -13,7 +50,6 @@ If your plugin does not need CSS, delete this file.
 	display: grid;
 	user-select: none;
 	border-radius: 6px;
-	position: absolute;
 	transition: 200ms ease;
 	min-width: fit-content;
 	justify-content: space-around;
@@ -45,7 +81,6 @@ If your plugin does not need CSS, delete this file.
 	display: grid;
 	user-select: none;
 	border-radius: 6px;
-	position: absolute;
 	transition: 200ms ease;
 	min-width: fit-content;
 	justify-content: space-around;

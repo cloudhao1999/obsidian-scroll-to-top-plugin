@@ -44,19 +44,16 @@ export default class MyPlugin extends Plugin {
 
 	private crateScrollElement(config: {
 		id: string,
-		bottom: number,
-		right: number,
 		icon: string,
-		tooltip: string,
 	}, fn: () => void) {
 		let topWidget = createEl("div");
 			if (topWidget) {
-				topWidget.setAttribute("style", `position: absolute; bottom: ${config.bottom}em; right: ${config.right}em; z-index: 99;`);
+				topWidget.setAttribute("class", `div-${config.id}`);
 			}
 			topWidget.setAttribute("id", config.id);
 
 			let button = new ButtonComponent(topWidget);
-			button.setIcon(config.icon).setClass('buttonItem').setTooltip(config.tooltip).onClick(() => {
+			button.setIcon(config.icon).setClass('buttonItem').onClick(() => {
 				fn()
 			});
 
@@ -74,7 +71,14 @@ export default class MyPlugin extends Plugin {
 			});
 	}
 
-	private createButton() {
+	public removeButton(id: string) {
+		const element = document.getElementById(id);
+		if (element) {
+			element.remove();
+		}
+	}
+
+	public createButton() {
 		this.currentValue++;
 
 		const { enabledScroolToTop, enabledScroolToBottom } = this.settings
@@ -91,20 +95,14 @@ export default class MyPlugin extends Plugin {
 			// create a button
 			this.crateScrollElement({
 				id: 'scrollToTop',
-				bottom: 5.75,
-				right: 2,
 				icon: 'arrow-up',
-				tooltip: 'Scroll to top',
 			}, this.scroolToTop.bind(this))
 		}
 
 		if (enabledScroolToBottom) {
 			this.crateScrollElement({
 				id: 'scrollToBottom',
-				bottom: 2.65,
-				right: 2,
 				icon: 'arrow-down',
-				tooltip: 'Scroll to Bottom',
 			}, this.scroolToBottom.bind(this))
 		}
 
@@ -115,6 +113,9 @@ export default class MyPlugin extends Plugin {
 		this.addSettingTab(new ScrollToTopSettingTab(this.app, this));
 		this.currentValue = 0;
 		this.createButton();
+		setTimeout(() => {
+			this.app.workspace.trigger("css-change");
+		}, 300);
 	}
 
 	async saveSettings() {
@@ -126,7 +127,8 @@ export default class MyPlugin extends Plugin {
 	}
 
 	onunload() {
-
+		this.removeButton('scrollToTop');
+		this.removeButton('scrollToBottom');
 	}
 }
 
@@ -153,6 +155,7 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.enabledScroolToTop = value;
 						await this.plugin.saveSettings();
+						value ? this.plugin.createButton() : this.plugin.removeButton('scrollToTop');
 					});
 			})
 
@@ -164,6 +167,7 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.enabledScroolToBottom = value;
 						await this.plugin.saveSettings();
+						value ? this.plugin.createButton() : this.plugin.removeButton('scrollToBottom');
 					});
 			})
 	}
