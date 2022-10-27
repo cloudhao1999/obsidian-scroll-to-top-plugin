@@ -28,6 +28,8 @@ settings:
         format: em
  
 */
+
+/* 	In case not using the style settings plugin */
 :root {
 	--scroll-to-bottom-bottom: 5.75em;
 	--scroll-to-bottom-left: 2.05em;
