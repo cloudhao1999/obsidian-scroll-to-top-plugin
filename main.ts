@@ -81,7 +81,7 @@ export default class MyPlugin extends Plugin {
 	public createButton() {
 		this.currentValue++;
 
-		const { enabledScroolToTop, enabledScroolToBottom } = this.settings
+		const { enabledScroolToTop, enabledScroolToBottom, iconScroolToTop, iconScroolToBottom } = this.settings
 
 		if (!document.body.querySelector(ROOT_WORKSPACE_CLASS)) {
 			// stop when reach max try times
@@ -95,14 +95,14 @@ export default class MyPlugin extends Plugin {
 			// create a button
 			this.crateScrollElement({
 				id: 'scrollToTop',
-				icon: 'arrow-up',
+				icon: iconScroolToTop,
 			}, this.scroolToTop.bind(this))
 		}
 
 		if (enabledScroolToBottom) {
 			this.crateScrollElement({
 				id: 'scrollToBottom',
-				icon: 'arrow-down',
+				icon: iconScroolToBottom,
 			}, this.scroolToBottom.bind(this))
 		}
 
@@ -140,6 +140,23 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
+	createSpanWithLinks(text: string, href: string, linkText: string): any {
+		const span = document.createElement('span');
+		span.innerText = text;
+		const link = document.createElement('a');
+		link.href = href
+		link.innerText = linkText
+		span.appendChild(link);
+
+		return span;
+	}
+
+	rebuildButton() {
+		this.plugin.removeButton('scrollToTop');
+		this.plugin.removeButton('scrollToBottom');
+		this.plugin.createButton();
+	}
+
 	display(): void {
 		const { containerEl } = this;
 
@@ -155,7 +172,7 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.enabledScroolToTop = value;
 						await this.plugin.saveSettings();
-						value ? this.plugin.createButton() : this.plugin.removeButton('scrollToTop');
+						this.rebuildButton()
 					});
 			})
 
@@ -167,8 +184,42 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.enabledScroolToBottom = value;
 						await this.plugin.saveSettings();
-						value ? this.plugin.createButton() : this.plugin.removeButton('scrollToBottom');
+						this.rebuildButton()
 					});
 			})
+
+		
+
+		new Setting(containerEl)
+		.setName('Change icon of scroll to top button')
+		.setDesc(this.createSpanWithLinks(
+			'Change icon of scroll to top button. You can visit aviable icons here: ',
+			'https://github.com/mgmeyers/obsidian-icon-swapper',
+			'obsidian-icon-swapper'
+			))
+		.addText(value => {
+			value.setValue(this.plugin.settings.iconScroolToTop)
+				.onChange(async (value) => {
+					this.plugin.settings.iconScroolToTop = value;
+					await this.plugin.saveSettings();
+					this.rebuildButton()
+				});
+		})
+
+		new Setting(containerEl)
+		.setName('Change icon of scroll to bottom button')
+		.setDesc(this.createSpanWithLinks(
+			'Change icon of scroll to bottom button. You can visit aviable icons here: ',
+			'https://github.com/mgmeyers/obsidian-icon-swapper',
+			'obsidian-icon-swapper'
+			))
+		.addText(value => {
+			value.setValue(this.plugin.settings.iconScroolToBottom)
+				.onChange(async (value) => {
+					this.plugin.settings.iconScroolToBottom = value;
+					await this.plugin.saveSettings();
+					this.rebuildButton()
+				});
+		})
 	}
 }
