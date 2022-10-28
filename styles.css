@@ -6,7 +6,7 @@ settings:
         id: scroll-to-top-bottom
         title: Scroll to top bottom position placement
         type: variable-number
-        default: 5.75
+        default: 2.65
         format: em
     - 
         id: scroll-to-top-left
@@ -18,7 +18,7 @@ settings:
         id: scroll-to-bottom-bottom
         title: Scroll to bottom bottom position placement
         type: variable-number
-        default: 2.65
+        default: 5.75
         format: em
     -
         id: scroll-to-bottom-left
@@ -31,9 +31,9 @@ settings:
 
 /* 	In case not using the style settings plugin */
 :root {
-	--scroll-to-bottom-bottom: 5.75em;
+	--scroll-to-bottom-bottom: 2.65em;
 	--scroll-to-bottom-left: 2.05em;
-	--scroll-to-top-bottom: 2.65em;
+	--scroll-to-top-bottom: 5.75em;
 	--scroll-to-top-left: 2.05em;
 }
 
