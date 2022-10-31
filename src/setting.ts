@@ -1,13 +1,13 @@
-export interface ScroolToTopSettingType {
-	enabledScroolToTop: boolean;
-	enabledScroolToBottom: boolean;
-	iconScroolToTop: string;
-	iconScroolToBottom: string;
+export interface ScrollToTopSettingType {
+	enabledScrollToTop: boolean;
+	enabledScrollToBottom: boolean;
+	iconScrollToTop: string;
+	iconScrollToBottom: string;
 }
 
-export const scroolToTopSetting: ScroolToTopSettingType = {
-	enabledScroolToTop: true,
-	enabledScroolToBottom: true,
-	iconScroolToTop: 'arrow-up',
-	iconScroolToBottom: 'arrow-down',
+export const scrollToTopSetting: ScrollToTopSettingType = {
+	enabledScrollToTop: true,
+	enabledScrollToBottom: true,
+	iconScrollToTop: 'arrow-up',
+	iconScrollToBottom: 'arrow-down',
 }

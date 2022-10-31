@@ -1,5 +1,5 @@
 import { MarkdownView, Plugin, ButtonComponent, PluginSettingTab, App, Setting } from 'obsidian';
-import { ScroolToTopSettingType, scroolToTopSetting } from './src/setting';
+import { ScrollToTopSettingType, scrollToTopSetting } from './src/setting';
 
 const ROOT_WORKSPACE_CLASS = '.mod-vertical.mod-root'
 
@@ -8,10 +8,10 @@ export default class MyPlugin extends Plugin {
 	maxValue: number = 100;
 	// current try times
 	currentValue: number = 0;
-	// scrool to top settings
-	settings: ScroolToTopSettingType;
+	// scroll to top settings
+	settings: ScrollToTopSettingType;
 
-	private scroolToTop() {
+	private scrollToTop() {
 		const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (markdownView) {
 			const editor = markdownView.editor;
@@ -22,7 +22,7 @@ export default class MyPlugin extends Plugin {
 		}
 	}
 
-	private scroolToBottom() {
+	private scrollToBottom() {
 		const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (markdownView) {
 			const editor = markdownView.editor;
@@ -81,7 +81,7 @@ export default class MyPlugin extends Plugin {
 	public createButton() {
 		this.currentValue++;
 
-		const { enabledScroolToTop, enabledScroolToBottom, iconScroolToTop, iconScroolToBottom } = this.settings
+		const { enabledScrollToTop, enabledScrollToBottom, iconScrollToTop, iconScrollToBottom } = this.settings
 
 		if (!document.body.querySelector(ROOT_WORKSPACE_CLASS)) {
 			// stop when reach max try times
@@ -91,19 +91,19 @@ export default class MyPlugin extends Plugin {
 			}, 100)
 			return
 		}
-		if (enabledScroolToTop) {
+		if (enabledScrollToTop) {
 			// create a button
 			this.crateScrollElement({
 				id: 'scrollToTop',
-				icon: iconScroolToTop,
-			}, this.scroolToTop.bind(this))
+				icon: iconScrollToTop,
+			}, this.scrollToTop.bind(this))
 		}
 
-		if (enabledScroolToBottom) {
+		if (enabledScrollToBottom) {
 			this.crateScrollElement({
 				id: 'scrollToBottom',
-				icon: iconScroolToBottom,
-			}, this.scroolToBottom.bind(this))
+				icon: iconScrollToBottom,
+			}, this.scrollToBottom.bind(this))
 		}
 
 	}
@@ -123,7 +123,7 @@ export default class MyPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, scroolToTopSetting, await this.loadData());
+		this.settings = Object.assign({}, scrollToTopSetting, await this.loadData());
 	}
 
 	onunload() {
@@ -162,15 +162,15 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Scrool To Top Settings' });
+		containerEl.createEl('h2', { text: 'Scroll To Top Settings' });
 
 		new Setting(containerEl)
 			.setName('Show scroll to top button')
 			.setDesc('Show scroll to top button in the right bottom corner.')
 			.addToggle(value => {
-				value.setValue(this.plugin.settings.enabledScroolToTop)
+				value.setValue(this.plugin.settings.enabledScrollToTop)
 					.onChange(async (value) => {
-						this.plugin.settings.enabledScroolToTop = value;
+						this.plugin.settings.enabledScrollToTop = value;
 						await this.plugin.saveSettings();
 						this.rebuildButton()
 					});
@@ -180,9 +180,9 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 			.setName('Show scroll to bottom button')
 			.setDesc('Show scroll to bottom button in the right bottom corner.')
 			.addToggle(value => {
-				value.setValue(this.plugin.settings.enabledScroolToBottom)
+				value.setValue(this.plugin.settings.enabledScrollToBottom)
 					.onChange(async (value) => {
-						this.plugin.settings.enabledScroolToBottom = value;
+						this.plugin.settings.enabledScrollToBottom = value;
 						await this.plugin.saveSettings();
 						this.rebuildButton()
 					});
@@ -198,9 +198,9 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 			'obsidian-icon-swapper'
 			))
 		.addText(value => {
-			value.setValue(this.plugin.settings.iconScroolToTop)
+			value.setValue(this.plugin.settings.iconScrollToTop)
 				.onChange(async (value) => {
-					this.plugin.settings.iconScroolToTop = value;
+					this.plugin.settings.iconScrollToTop = value;
 					await this.plugin.saveSettings();
 					this.rebuildButton()
 				});
@@ -214,9 +214,9 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 			'obsidian-icon-swapper'
 			))
 		.addText(value => {
-			value.setValue(this.plugin.settings.iconScroolToBottom)
+			value.setValue(this.plugin.settings.iconScrollToBottom)
 				.onChange(async (value) => {
-					this.plugin.settings.iconScroolToBottom = value;
+					this.plugin.settings.iconScrollToBottom = value;
 					await this.plugin.saveSettings();
 					this.rebuildButton()
 				});
