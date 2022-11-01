@@ -18,4 +18,4 @@ This is a plugin for Obsidian that adds a button to scroll to the top of the cur
 
 - Edit more button options in the plugin settings (WIP)
 
-![Settings](https://cdn.staticaly.com/gh/cloudhao1999/image-hosting@master/image.3u0szvepeue0.webp)
+![Settings](https://cdn.staticaly.com/gh/cloudhao1999/image-hosting@master/image.3qbadlkn6y40.webp)
