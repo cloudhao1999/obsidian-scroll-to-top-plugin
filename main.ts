@@ -45,30 +45,38 @@ export default class MyPlugin extends Plugin {
 	private crateScrollElement(config: {
 		id: string,
 		icon: string,
+		tooltipConfig: {
+			showTooltip: boolean,
+			tooltipText: string,
+		}
 	}, fn: () => void) {
 		let topWidget = createEl("div");
-			if (topWidget) {
-				topWidget.setAttribute("class", `div-${config.id}`);
+		if (topWidget) {
+			topWidget.setAttribute("class", `div-${config.id}`);
+		}
+		topWidget.setAttribute("id", config.id);
+
+		let button = new ButtonComponent(topWidget);
+		button.setIcon(config.icon).setClass('buttonItem').onClick(() => {
+			fn()
+		});
+
+		if (config.tooltipConfig.showTooltip) {
+			button.setTooltip(config.tooltipConfig.tooltipText);
+		}
+
+		document.body
+			.querySelector(ROOT_WORKSPACE_CLASS)
+			?.insertAdjacentElement("afterbegin", topWidget);
+
+		document.addEventListener("click", function (event) {
+			const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
+			if (activeLeaf) {
+				topWidget.style.visibility = "visible";
+			} else {
+				topWidget.style.visibility = "hidden";
 			}
-			topWidget.setAttribute("id", config.id);
-
-			let button = new ButtonComponent(topWidget);
-			button.setIcon(config.icon).setClass('buttonItem').onClick(() => {
-				fn()
-			});
-
-			document.body
-				.querySelector(ROOT_WORKSPACE_CLASS)
-				?.insertAdjacentElement("afterbegin", topWidget);
-
-			document.addEventListener("click", function (event) {
-				const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
-				if (activeLeaf) {
-					topWidget.style.visibility = "visible";
-				} else {
-					topWidget.style.visibility = "hidden";
-				}
-			});
+		});
 	}
 
 	public removeButton(id: string) {
@@ -81,7 +89,7 @@ export default class MyPlugin extends Plugin {
 	public createButton() {
 		this.currentValue++;
 
-		const { enabledScrollToTop, enabledScrollToBottom, iconScrollToTop, iconScrollToBottom } = this.settings
+		const { enabledScrollToTop, enabledScrollToBottom, iconScrollToTop, iconScrollToBottom, showTooltip, scrollTopTooltipText, scrollBottomTooltipText } = this.settings
 
 		if (!document.body.querySelector(ROOT_WORKSPACE_CLASS)) {
 			// stop when reach max try times
@@ -96,6 +104,10 @@ export default class MyPlugin extends Plugin {
 			this.crateScrollElement({
 				id: 'scrollToTop',
 				icon: iconScrollToTop,
+				tooltipConfig: {
+					showTooltip,
+					tooltipText: scrollTopTooltipText,
+				}
 			}, this.scrollToTop.bind(this))
 		}
 
@@ -103,6 +115,11 @@ export default class MyPlugin extends Plugin {
 			this.crateScrollElement({
 				id: 'scrollToBottom',
 				icon: iconScrollToBottom,
+				tooltipConfig: {
+					showTooltip,
+					tooltipText: scrollBottomTooltipText,
+				}
+				
 			}, this.scrollToBottom.bind(this))
 		}
 
@@ -188,38 +205,72 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 					});
 			})
 
-		
+		new Setting(containerEl)
+			.setName('Show Tooltip')
+			.setDesc('Show tooltip when hover on the button.')
+			.addToggle(value => {
+				value.setValue(this.plugin.settings.showTooltip)
+					.onChange(async (value) => {
+						this.plugin.settings.showTooltip = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton()
+					});
+			})
 
 		new Setting(containerEl)
-		.setName('Change icon of scroll to top button')
-		.setDesc(this.createSpanWithLinks(
-			'Change icon of scroll to top button. You can visit aviable icons here: ',
-			'https://github.com/mgmeyers/obsidian-icon-swapper',
-			'obsidian-icon-swapper'
-			))
-		.addText(value => {
-			value.setValue(this.plugin.settings.iconScrollToTop)
-				.onChange(async (value) => {
-					this.plugin.settings.iconScrollToTop = value;
-					await this.plugin.saveSettings();
-					this.rebuildButton()
-				});
-		})
+			.setName('Change tooltip text of scroll to top button')
+			.setDesc('Change tooltip text of scroll to top button.')
+			.addText(value => {
+				value.setValue(this.plugin.settings.scrollTopTooltipText)
+					.onChange(async (value) => {
+						this.plugin.settings.scrollTopTooltipText = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton()
+					});
+			})
 
 		new Setting(containerEl)
-		.setName('Change icon of scroll to bottom button')
-		.setDesc(this.createSpanWithLinks(
-			'Change icon of scroll to bottom button. You can visit aviable icons here: ',
-			'https://github.com/mgmeyers/obsidian-icon-swapper',
-			'obsidian-icon-swapper'
+			.setName('Change tooltip text of scroll to bottom button')
+			.setDesc('Change tooltip text of scroll to bottom button.')
+			.addText(value => {
+				value.setValue(this.plugin.settings.scrollBottomTooltipText)
+					.onChange(async (value) => {
+						this.plugin.settings.scrollBottomTooltipText = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton()
+					});
+			})
+
+		new Setting(containerEl)
+			.setName('Change icon of scroll to top button')
+			.setDesc(this.createSpanWithLinks(
+				'Change icon of scroll to top button. You can visit aviable icons here: ',
+				'https://github.com/mgmeyers/obsidian-icon-swapper',
+				'obsidian-icon-swapper'
 			))
-		.addText(value => {
-			value.setValue(this.plugin.settings.iconScrollToBottom)
-				.onChange(async (value) => {
-					this.plugin.settings.iconScrollToBottom = value;
-					await this.plugin.saveSettings();
-					this.rebuildButton()
-				});
-		})
+			.addText(value => {
+				value.setValue(this.plugin.settings.iconScrollToTop)
+					.onChange(async (value) => {
+						this.plugin.settings.iconScrollToTop = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton()
+					});
+			})
+
+		new Setting(containerEl)
+			.setName('Change icon of scroll to bottom button')
+			.setDesc(this.createSpanWithLinks(
+				'Change icon of scroll to bottom button. You can visit aviable icons here: ',
+				'https://github.com/mgmeyers/obsidian-icon-swapper',
+				'obsidian-icon-swapper'
+			))
+			.addText(value => {
+				value.setValue(this.plugin.settings.iconScrollToBottom)
+					.onChange(async (value) => {
+						this.plugin.settings.iconScrollToBottom = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton()
+					});
+			})
 	}
 }

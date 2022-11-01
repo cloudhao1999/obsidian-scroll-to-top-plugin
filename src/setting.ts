@@ -3,6 +3,9 @@ export interface ScrollToTopSettingType {
 	enabledScrollToBottom: boolean;
 	iconScrollToTop: string;
 	iconScrollToBottom: string;
+	showTooltip: boolean;
+	scrollTopTooltipText: string;
+	scrollBottomTooltipText: string;
 }
 
 export const scrollToTopSetting: ScrollToTopSettingType = {
@@ -10,4 +13,7 @@ export const scrollToTopSetting: ScrollToTopSettingType = {
 	enabledScrollToBottom: true,
 	iconScrollToTop: 'arrow-up',
 	iconScrollToBottom: 'arrow-down',
+	showTooltip: true,
+	scrollTopTooltipText: 'Scroll to top',
+	scrollBottomTooltipText: 'Scroll to bottom',
 }
