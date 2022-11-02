@@ -25,8 +25,31 @@ settings:
         title: Scroll to bottom right position placement
         type: variable-number
         default: 2.05
+        format: em 
+	-
+        id: scroll-to-top-width
+        title: Scroll to top button width
+        type: variable-number
+        default: 1.875
         format: em
- 
+	-
+        id: scroll-to-top-height
+        title: Scroll to top button height
+        type: variable-number
+        default: 1.875
+        format: em
+	-
+		id: scroll-to-bottom-width
+		title: Scroll to bottom button width
+		type: variable-number
+		default: 1.875
+		format: em
+	-
+		id: scroll-to-bottom-height
+		title: Scroll to bottom button height
+		type: variable-number
+		default: 1.875
+		format: em
 */
 
 /* 	In case not using the style settings plugin */
@@ -35,6 +58,11 @@ settings:
 	--scroll-to-bottom-left: 2.05em;
 	--scroll-to-top-bottom: 5.75em;
 	--scroll-to-top-left: 2.05em;
+	--scroll-input-width: 1.875em;
+	--scroll-to-top-width: var(--scroll-input-width);
+	--scroll-to-top-height: var(--scroll-input-width);
+	--scroll-to-bottom-width: var(--scroll-input-width);
+	--scroll-to-bottom-height: var(--scroll-input-width);
 }
 
 .div-scrollToTop {
@@ -74,6 +102,8 @@ settings:
 	margin-left: 3px;
 	margin-right: 3px;
 	border-radius: 3px;
+	width: var(--scroll-to-top-width);
+	height: var(--scroll-to-top-height);
 	font-size: initial !important;
 	background-color: var(--background-primary-alt);
 }
@@ -104,6 +134,8 @@ settings:
 	box-shadow: none;
 	margin-left: 3px;
 	margin-right: 3px;
+	width: var(--scroll-to-bottom-width);
+	height: var(--scroll-to-bottom-height);
 	border-radius: 3px;
 	font-size: initial !important;
 	background-color: var(--background-primary-alt);
