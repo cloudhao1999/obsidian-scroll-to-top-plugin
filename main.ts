@@ -1,7 +1,14 @@
-import { MarkdownView, Plugin, ButtonComponent, PluginSettingTab, App, Setting } from 'obsidian';
-import { ScrollToTopSettingType, scrollToTopSetting } from './src/setting';
+import {
+	MarkdownView,
+	Plugin,
+	ButtonComponent,
+	PluginSettingTab,
+	App,
+	Setting,
+} from "obsidian";
+import { ScrollToTopSettingType, scrollToTopSetting } from "./src/setting";
 
-const ROOT_WORKSPACE_CLASS = '.mod-vertical.mod-root'
+const ROOT_WORKSPACE_CLASS = ".mod-vertical.mod-root";
 
 export default class MyPlugin extends Plugin {
 	// max try times
@@ -12,23 +19,25 @@ export default class MyPlugin extends Plugin {
 	settings: ScrollToTopSettingType;
 
 	private scrollToTop() {
-		const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		const markdownView =
+			this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (markdownView) {
 			const editor = markdownView.editor;
 			const preview = markdownView.previewMode;
 
-			editor && editor.exec('goStart');
+			editor.exec("goStart");
 			preview && preview.applyScroll(0);
 		}
 	}
 
 	private scrollToBottom() {
-		const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		const markdownView =
+			this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (markdownView) {
 			const editor = markdownView.editor;
 			const preview = markdownView.previewMode;
 
-			editor && editor.exec('goEnd');
+			editor.exec("goEnd");
 			// the way to solve preview scroll to bottom
 			if (preview) {
 				let timer = setInterval(() => {
@@ -37,29 +46,29 @@ export default class MyPlugin extends Plugin {
 					if (prevScroll === preview.getScroll()) {
 						clearInterval(timer);
 					}
-				})
+				});
 			}
 		}
 	}
 
-	private crateScrollElement(config: {
-		id: string,
-		icon: string,
-		tooltipConfig: {
-			showTooltip: boolean,
-			tooltipText: string,
-		}
-	}, fn: () => void) {
+	private crateScrollElement(
+		config: {
+			id: string;
+			className: string;
+			icon: string;
+			tooltipConfig: {
+				showTooltip: boolean;
+				tooltipText: string;
+			};
+		},
+		fn: () => void
+	) {
 		let topWidget = createEl("div");
-		if (topWidget) {
-			topWidget.setAttribute("class", `div-${config.id}`);
-		}
+		topWidget.setAttribute("class", `div-${config.className}`);
 		topWidget.setAttribute("id", config.id);
 
 		let button = new ButtonComponent(topWidget);
-		button.setIcon(config.icon).setClass('buttonItem').onClick(() => {
-			fn()
-		});
+		button.setIcon(config.icon).setClass("buttonItem").onClick(fn);
 
 		if (config.tooltipConfig.showTooltip) {
 			button.setTooltip(config.tooltipConfig.tooltipText);
@@ -89,40 +98,54 @@ export default class MyPlugin extends Plugin {
 	public createButton() {
 		this.currentValue++;
 
-		const { enabledScrollToTop, enabledScrollToBottom, iconScrollToTop, iconScrollToBottom, showTooltip, scrollTopTooltipText, scrollBottomTooltipText } = this.settings
+		const {
+			enabledScrollToTop,
+			enabledScrollToBottom,
+			iconScrollToTop,
+			iconScrollToBottom,
+			showTooltip,
+			scrollTopTooltipText,
+			scrollBottomTooltipText,
+		} = this.settings;
 
 		if (!document.body.querySelector(ROOT_WORKSPACE_CLASS)) {
 			// stop when reach max try times
-			if (this.maxValue < this.currentValue) return
+			if (this.maxValue < this.currentValue) return;
 			setTimeout(() => {
 				this.createButton();
-			}, 100)
-			return
+			}, 100);
+			return;
 		}
 		if (enabledScrollToTop) {
 			// create a button
-			this.crateScrollElement({
-				id: 'scrollToTop',
-				icon: iconScrollToTop,
-				tooltipConfig: {
-					showTooltip,
-					tooltipText: scrollTopTooltipText,
-				}
-			}, this.scrollToTop.bind(this))
+			this.crateScrollElement(
+				{
+					id: "__C_scrollToTop",
+					className: "scrollToTop",
+					icon: iconScrollToTop,
+					tooltipConfig: {
+						showTooltip,
+						tooltipText: scrollTopTooltipText,
+					},
+				},
+				this.scrollToTop.bind(this)
+			);
 		}
 
 		if (enabledScrollToBottom) {
-			this.crateScrollElement({
-				id: 'scrollToBottom',
-				icon: iconScrollToBottom,
-				tooltipConfig: {
-					showTooltip,
-					tooltipText: scrollBottomTooltipText,
-				}
-				
-			}, this.scrollToBottom.bind(this))
+			this.crateScrollElement(
+				{
+					id: "__C_scrollToBottom",
+					className: "scrollToBottom",
+					icon: iconScrollToBottom,
+					tooltipConfig: {
+						showTooltip,
+						tooltipText: scrollBottomTooltipText,
+					},
+				},
+				this.scrollToBottom.bind(this)
+			);
 		}
-
 	}
 
 	async onload() {
@@ -140,12 +163,16 @@ export default class MyPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, scrollToTopSetting, await this.loadData());
+		this.settings = Object.assign(
+			{},
+			scrollToTopSetting,
+			await this.loadData()
+		);
 	}
 
 	onunload() {
-		this.removeButton('scrollToTop');
-		this.removeButton('scrollToBottom');
+		this.removeButton("__C_scrollToTop");
+		this.removeButton("__C_scrollToBottom");
 	}
 }
 
@@ -158,19 +185,19 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 	}
 
 	createSpanWithLinks(text: string, href: string, linkText: string): any {
-		const span = document.createElement('span');
+		const span = document.createElement("span");
 		span.innerText = text;
-		const link = document.createElement('a');
-		link.href = href
-		link.innerText = linkText
+		const link = document.createElement("a");
+		link.href = href;
+		link.innerText = linkText;
 		span.appendChild(link);
 
 		return span;
 	}
 
 	rebuildButton() {
-		this.plugin.removeButton('scrollToTop');
-		this.plugin.removeButton('scrollToBottom');
+		this.plugin.removeButton("__C_scrollToTop");
+		this.plugin.removeButton("__C_scrollToBottom");
 		this.plugin.createButton();
 	}
 
@@ -179,98 +206,109 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Scroll To Top Settings' });
+		containerEl.createEl("h2", { text: "Scroll To Top Settings" });
 
 		new Setting(containerEl)
-			.setName('Show scroll to top button')
-			.setDesc('Show scroll to top button in the right bottom corner.')
-			.addToggle(value => {
-				value.setValue(this.plugin.settings.enabledScrollToTop)
+			.setName("Show scroll to top button")
+			.setDesc("Show scroll to top button in the right bottom corner.")
+			.addToggle((value) => {
+				value
+					.setValue(this.plugin.settings.enabledScrollToTop)
 					.onChange(async (value) => {
 						this.plugin.settings.enabledScrollToTop = value;
 						await this.plugin.saveSettings();
-						this.rebuildButton()
+						this.rebuildButton();
 					});
-			})
+			});
 
 		new Setting(containerEl)
-			.setName('Show scroll to bottom button')
-			.setDesc('Show scroll to bottom button in the right bottom corner.')
-			.addToggle(value => {
-				value.setValue(this.plugin.settings.enabledScrollToBottom)
+			.setName("Show scroll to bottom button")
+			.setDesc("Show scroll to bottom button in the right bottom corner.")
+			.addToggle((value) => {
+				value
+					.setValue(this.plugin.settings.enabledScrollToBottom)
 					.onChange(async (value) => {
 						this.plugin.settings.enabledScrollToBottom = value;
 						await this.plugin.saveSettings();
-						this.rebuildButton()
+						this.rebuildButton();
 					});
-			})
+			});
 
 		new Setting(containerEl)
-			.setName('Show Tooltip')
-			.setDesc('Show tooltip when hover on the button.')
-			.addToggle(value => {
-				value.setValue(this.plugin.settings.showTooltip)
+			.setName("Show Tooltip")
+			.setDesc("Show tooltip when hover on the button.")
+			.addToggle((value) => {
+				value
+					.setValue(this.plugin.settings.showTooltip)
 					.onChange(async (value) => {
 						this.plugin.settings.showTooltip = value;
 						await this.plugin.saveSettings();
-						this.rebuildButton()
+						this.rebuildButton();
 					});
-			})
+			});
 
 		new Setting(containerEl)
-			.setName('Change tooltip text of scroll to top button')
-			.setDesc('Change tooltip text of scroll to top button.')
-			.addText(value => {
-				value.setValue(this.plugin.settings.scrollTopTooltipText)
+			.setName("tooltip config for top button")
+			.setDesc("Change tooltip text of scroll to top button.")
+			.addText((value) => {
+				value
+					.setValue(this.plugin.settings.scrollTopTooltipText)
 					.onChange(async (value) => {
 						this.plugin.settings.scrollTopTooltipText = value;
 						await this.plugin.saveSettings();
-						this.rebuildButton()
+						this.rebuildButton();
 					});
-			})
+			});
 
 		new Setting(containerEl)
-			.setName('Change tooltip text of scroll to bottom button')
-			.setDesc('Change tooltip text of scroll to bottom button.')
-			.addText(value => {
-				value.setValue(this.plugin.settings.scrollBottomTooltipText)
+			.setName("tooltip config for bottom button")
+			.setDesc("Change tooltip text of scroll to bottom button.")
+			.addText((value) => {
+				value
+					.setValue(this.plugin.settings.scrollBottomTooltipText)
 					.onChange(async (value) => {
 						this.plugin.settings.scrollBottomTooltipText = value;
 						await this.plugin.saveSettings();
-						this.rebuildButton()
+						this.rebuildButton();
 					});
-			})
+			});
 
 		new Setting(containerEl)
-			.setName('Change icon of scroll to top button')
-			.setDesc(this.createSpanWithLinks(
-				'Change icon of scroll to top button. You can visit aviable icons here: ',
-				'https://github.com/mgmeyers/obsidian-icon-swapper',
-				'obsidian-icon-swapper'
-			))
-			.addText(value => {
-				value.setValue(this.plugin.settings.iconScrollToTop)
+			.setName("Change icon of scroll to top button")
+			.setDesc(
+				this.createSpanWithLinks(
+					"Change icon of scroll to top button. You can visit aviable icons here: ",
+					"https://github.com/mgmeyers/obsidian-icon-swapper",
+					"obsidian-icon-swapper"
+				)
+			)
+			.addText((value) => {
+				value
+					.setValue(this.plugin.settings.iconScrollToTop)
 					.onChange(async (value) => {
 						this.plugin.settings.iconScrollToTop = value;
 						await this.plugin.saveSettings();
-						this.rebuildButton()
+						this.rebuildButton();
 					});
-			})
+			});
 
 		new Setting(containerEl)
-			.setName('Change icon of scroll to bottom button')
-			.setDesc(this.createSpanWithLinks(
-				'Change icon of scroll to bottom button. You can visit aviable icons here: ',
-				'https://github.com/mgmeyers/obsidian-icon-swapper',
-				'obsidian-icon-swapper'
-			))
-			.addText(value => {
-				value.setValue(this.plugin.settings.iconScrollToBottom)
+			.setName("Change icon of scroll to bottom button")
+			.setDesc(
+				this.createSpanWithLinks(
+					"Change icon of scroll to bottom button. You can visit aviable icons here: ",
+					"https://github.com/mgmeyers/obsidian-icon-swapper",
+					"obsidian-icon-swapper"
+				)
+			)
+			.addText((value) => {
+				value
+					.setValue(this.plugin.settings.iconScrollToBottom)
 					.onChange(async (value) => {
 						this.plugin.settings.iconScrollToBottom = value;
 						await this.plugin.saveSettings();
-						this.rebuildButton()
+						this.rebuildButton();
 					});
-			})
+			});
 	}
 }
