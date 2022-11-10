@@ -10,13 +10,11 @@ import { ScrollToTopSettingType, scrollToTopSetting } from "./src/setting";
 
 const ROOT_WORKSPACE_CLASS = ".mod-vertical.mod-root";
 
-export default class MyPlugin extends Plugin {
-	// max try times
-	maxValue: number = 100;
-	// current try times
-	currentValue: number = 0;
+export default class ScrollToTopPlugin extends Plugin {
 	// scroll to top settings
 	settings: ScrollToTopSettingType;
+	// manage popup window
+	windowSet: Set<Window> = new Set();
 
 	private scrollToTop() {
 		const markdownView =
@@ -42,8 +40,8 @@ export default class MyPlugin extends Plugin {
 			if (preview) {
 				let timer = setInterval(() => {
 					const prevScroll = preview.getScroll();
-					preview.applyScroll(preview.getScroll() + 5);
-					if (prevScroll === preview.getScroll()) {
+					preview.applyScroll(preview.getScroll() + 10);
+					if (prevScroll >= preview.getScroll()) {
 						clearInterval(timer);
 					}
 				});
@@ -51,11 +49,12 @@ export default class MyPlugin extends Plugin {
 		}
 	}
 
-	private crateScrollElement(
+	private createScrollElement(
 		config: {
 			id: string;
 			className: string;
 			icon: string;
+			curWindow?: Window;
 			tooltipConfig: {
 				showTooltip: boolean;
 				tooltipText: string;
@@ -74,12 +73,15 @@ export default class MyPlugin extends Plugin {
 			button.setTooltip(config.tooltipConfig.tooltipText);
 		}
 
-		document.body
+		let curWindow = config.curWindow || window;
+
+		curWindow.document.body
 			.querySelector(ROOT_WORKSPACE_CLASS)
 			?.insertAdjacentElement("afterbegin", topWidget);
 
-		document.addEventListener("click", function (event) {
+		curWindow.document.addEventListener("click", function (event) {
 			const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
+
 			if (activeLeaf) {
 				topWidget.style.visibility = "visible";
 			} else {
@@ -88,16 +90,15 @@ export default class MyPlugin extends Plugin {
 		});
 	}
 
-	public removeButton(id: string) {
-		const element = document.getElementById(id);
+	public removeButton(id: string, curWindow?: Window) {
+		let curWin = curWindow || window;
+		const element = curWin.document.getElementById(id);
 		if (element) {
 			element.remove();
 		}
 	}
 
-	public createButton() {
-		this.currentValue++;
-
+	public createButton(window?: Window) {
 		const {
 			enabledScrollToTop,
 			enabledScrollToBottom,
@@ -108,21 +109,14 @@ export default class MyPlugin extends Plugin {
 			scrollBottomTooltipText,
 		} = this.settings;
 
-		if (!document.body.querySelector(ROOT_WORKSPACE_CLASS)) {
-			// stop when reach max try times
-			if (this.maxValue < this.currentValue) return;
-			setTimeout(() => {
-				this.createButton();
-			}, 100);
-			return;
-		}
 		if (enabledScrollToTop) {
 			// create a button
-			this.crateScrollElement(
+			this.createScrollElement(
 				{
 					id: "__C_scrollToTop",
 					className: "scrollToTop",
 					icon: iconScrollToTop,
+					curWindow: window,
 					tooltipConfig: {
 						showTooltip,
 						tooltipText: scrollTopTooltipText,
@@ -133,11 +127,12 @@ export default class MyPlugin extends Plugin {
 		}
 
 		if (enabledScrollToBottom) {
-			this.crateScrollElement(
+			this.createScrollElement(
 				{
 					id: "__C_scrollToBottom",
 					className: "scrollToBottom",
 					icon: iconScrollToBottom,
+					curWindow: window,
 					tooltipConfig: {
 						showTooltip,
 						tooltipText: scrollBottomTooltipText,
@@ -151,8 +146,19 @@ export default class MyPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new ScrollToTopSettingTab(this.app, this));
-		this.currentValue = 0;
-		this.createButton();
+		this.app.workspace.onLayoutReady(() => {
+			this.createButton();
+		});
+
+		// add popup window support
+		this.app.workspace.on("window-open", (win, window) => {
+			this.windowSet.add(window);
+			this.createButton(window);
+		});
+		this.app.workspace.on("window-close", (win, window) => {
+			this.windowSet.delete(window);
+		});
+
 		setTimeout(() => {
 			this.app.workspace.trigger("css-change");
 		}, 300);
@@ -173,13 +179,20 @@ export default class MyPlugin extends Plugin {
 	onunload() {
 		this.removeButton("__C_scrollToTop");
 		this.removeButton("__C_scrollToBottom");
+		// for popup window
+		if (this.windowSet.size > 0) {
+			this.windowSet.forEach((window) => {
+				this.removeButton("__C_scrollToTop", window);
+				this.removeButton("__C_scrollToBottom", window);
+			});
+		}
 	}
 }
 
 class ScrollToTopSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: ScrollToTopPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: ScrollToTopPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -199,13 +212,19 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 		this.plugin.removeButton("__C_scrollToTop");
 		this.plugin.removeButton("__C_scrollToBottom");
 		this.plugin.createButton();
+		// for popup window
+		if (this.plugin.windowSet.size > 0) {
+			this.plugin.windowSet.forEach((window) => {
+				this.plugin.removeButton("__C_scrollToTop", window);
+				this.plugin.removeButton("__C_scrollToBottom", window);
+				this.plugin.createButton(window);
+			});
+		}
 	}
 
 	display(): void {
 		const { containerEl } = this;
-
 		containerEl.empty();
-
 		containerEl.createEl("h2", { text: "Scroll To Top Settings" });
 
 		new Setting(containerEl)
@@ -277,7 +296,7 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 			.setName("Change icon of scroll to top button")
 			.setDesc(
 				this.createSpanWithLinks(
-					"Change icon of scroll to top button. You can visit aviable icons here: ",
+					"Change icon of scroll to top button. You can visit available icons here: ",
 					"https://github.com/mgmeyers/obsidian-icon-swapper",
 					"obsidian-icon-swapper"
 				)
@@ -296,7 +315,7 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 			.setName("Change icon of scroll to bottom button")
 			.setDesc(
 				this.createSpanWithLinks(
-					"Change icon of scroll to bottom button. You can visit aviable icons here: ",
+					"Change icon of scroll to bottom button. You can visit available icons here: ",
 					"https://github.com/mgmeyers/obsidian-icon-swapper",
 					"obsidian-icon-swapper"
 				)
