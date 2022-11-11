@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-scroll-to-top-plugin",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"description": "This is a plugin for Obsidian that adds a button to scroll to the top of the current note.",
 	"main": "main.js",
 	"scripts": {

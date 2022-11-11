@@ -23,7 +23,8 @@ export default class ScrollToTopPlugin extends Plugin {
 			const editor = markdownView.editor;
 			const preview = markdownView.previewMode;
 
-			editor.exec("goStart");
+			// not limited to the start of the editor text
+			editor.scrollTo(0, 0);
 			preview && preview.applyScroll(0);
 		}
 	}
