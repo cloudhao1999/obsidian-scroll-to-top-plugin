@@ -298,8 +298,8 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 			.setDesc(
 				this.createSpanWithLinks(
 					"Change icon of scroll to top button. You can visit available icons here: ",
-					"https://github.com/mgmeyers/obsidian-icon-swapper",
-					"obsidian-icon-swapper"
+					"https://lucide.dev/",
+					"lucide.dev"
 				)
 			)
 			.addText((value) => {
@@ -317,8 +317,8 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 			.setDesc(
 				this.createSpanWithLinks(
 					"Change icon of scroll to bottom button. You can visit available icons here: ",
-					"https://github.com/mgmeyers/obsidian-icon-swapper",
-					"obsidian-icon-swapper"
+					"https://lucide.dev/",
+					"lucide.dev"
 				)
 			)
 			.addText((value) => {
