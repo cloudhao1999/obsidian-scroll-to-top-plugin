@@ -16,6 +16,14 @@ export default class ScrollToTopPlugin extends Plugin {
 	// manage popup window
 	windowSet: Set<Window> = new Set();
 
+	private addPluginCommand(id: string, name: string, callback: () => void) {
+		this.addCommand({
+			id,
+			name,
+			callback
+		});
+	}
+
 	private scrollToTop() {
 		const markdownView =
 			this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -150,6 +158,9 @@ export default class ScrollToTopPlugin extends Plugin {
 		this.app.workspace.onLayoutReady(() => {
 			this.createButton();
 		});
+		// expose plugin commands
+		this.addPluginCommand("scroll-to-top", "Scroll to Top", this.scrollToTop.bind(this));
+		this.addPluginCommand("scroll-to-bottom", "Scroll to Bottom", this.scrollToBottom.bind(this));
 
 		// add popup window support
 		this.app.workspace.on("window-open", (win, window) => {
