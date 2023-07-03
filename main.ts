@@ -87,16 +87,26 @@ export default class ScrollToTopPlugin extends Plugin {
 		curWindow.document.body
 			.querySelector(ROOT_WORKSPACE_CLASS)
 			?.insertAdjacentElement("afterbegin", topWidget);
+		
+		//hidden at start if empty tab
+		if (
+			(this.app as any).workspace.activeLeaf.view.getViewType() ===
+			"empty"
+		) {
+			topWidget.style.visibility = "hidden";
+		}
 
-		curWindow.document.addEventListener("click", function (event) {
-			const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
+		// normally no more needed
 
-			if (activeLeaf) {
-				topWidget.style.visibility = "visible";
-			} else {
-				topWidget.style.visibility = "hidden";
-			}
-		});
+		// curWindow.document.addEventListener("click", function (event) {
+		// 	const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
+
+		// 	if (activeLeaf) {
+		// 		topWidget.style.visibility = "visible";
+		// 	} else {
+		// 		topWidget.style.visibility = "hidden";
+		// 	}
+		// });
 	}
 
 	public isPreview(markdownView: MarkdownView) {
@@ -162,7 +172,37 @@ export default class ScrollToTopPlugin extends Plugin {
 		this.addSettingTab(new ScrollToTopSettingTab(this.app, this));
 		this.app.workspace.onLayoutReady(() => {
 			this.createButton();
+			
+			// when opening new file
+			this.registerEvent(
+				this.app.workspace.on("file-open", () => {
+					if (
+						(
+							this.app as any
+						).workspace.activeLeaf.view.getViewType() === "empty"
+					) {
+						let BottomButton =
+							document.getElementById("__C_scrollToBottom");
+						if (BottomButton)
+							BottomButton.style.visibility = "hidden";
+
+						let TopButton =
+							document.getElementById("__C_scrollToTop");
+						if (TopButton) TopButton.style.visibility = "hidden";
+					} else {
+						let BottomButton =
+							document.getElementById("__C_scrollToBottom");
+						if (BottomButton)
+							BottomButton.style.visibility = "visible";
+
+						let TopButton =
+							document.getElementById("__C_scrollToTop");
+						if (TopButton) TopButton.style.visibility = "visible";
+					}
+				})
+			);
 		});
+
 		// expose plugin commands
 		this.addPluginCommand(
 			"scroll-to-top",
