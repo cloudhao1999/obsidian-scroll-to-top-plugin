@@ -20,7 +20,7 @@ export default class ScrollToTopPlugin extends Plugin {
 		this.addCommand({
 			id,
 			name,
-			callback
+			callback,
 		});
 	}
 
@@ -31,9 +31,9 @@ export default class ScrollToTopPlugin extends Plugin {
 			const editor = markdownView.editor;
 			const preview = markdownView.previewMode;
 
-			// not limited to the start of the editor text
+			// not limited to the start of the editor text as with editor.exec("goStart");
 			editor.scrollTo(0, 0);
-			preview && preview.applyScroll(0);
+			this.isPreview(markdownView) && preview.applyScroll(0);
 		}
 	}
 
@@ -46,7 +46,7 @@ export default class ScrollToTopPlugin extends Plugin {
 
 			editor.exec("goEnd");
 			// the way to solve preview scroll to bottom
-			if (preview) {
+			if (this.isPreview(markdownView)) {
 				let timer = setInterval(() => {
 					const prevScroll = preview.getScroll();
 					preview.applyScroll(preview.getScroll() + 10);
@@ -97,6 +97,11 @@ export default class ScrollToTopPlugin extends Plugin {
 				topWidget.style.visibility = "hidden";
 			}
 		});
+	}
+
+	public isPreview(markdownView: MarkdownView) {
+		const mode = markdownView.getMode();
+		return mode === "preview";
 	}
 
 	public removeButton(id: string, curWindow?: Window) {
@@ -159,8 +164,16 @@ export default class ScrollToTopPlugin extends Plugin {
 			this.createButton();
 		});
 		// expose plugin commands
-		this.addPluginCommand("scroll-to-top", "Scroll to Top", this.scrollToTop.bind(this));
-		this.addPluginCommand("scroll-to-bottom", "Scroll to Bottom", this.scrollToBottom.bind(this));
+		this.addPluginCommand(
+			"scroll-to-top",
+			"Scroll to Top",
+			this.scrollToTop.bind(this)
+		);
+		this.addPluginCommand(
+			"scroll-to-bottom",
+			"Scroll to Bottom",
+			this.scrollToBottom.bind(this)
+		);
 
 		// add popup window support
 		this.app.workspace.on("window-open", (win, window) => {
