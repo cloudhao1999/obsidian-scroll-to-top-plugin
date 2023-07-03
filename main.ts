@@ -84,29 +84,15 @@ export default class ScrollToTopPlugin extends Plugin {
 
 		let curWindow = config.curWindow || window;
 
-		curWindow.document.body
+		curWindow.activeDocument.body
 			.querySelector(ROOT_WORKSPACE_CLASS)
 			?.insertAdjacentElement("afterbegin", topWidget);
-		
+
+		const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
 		//hidden at start if empty tab
-		if (
-			(this.app as any).workspace.activeLeaf.view.getViewType() ===
-			"empty"
-		) {
+		if (!activeLeaf) {
 			topWidget.style.visibility = "hidden";
 		}
-
-		// normally no more needed
-
-		// curWindow.document.addEventListener("click", function (event) {
-		// 	const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
-
-		// 	if (activeLeaf) {
-		// 		topWidget.style.visibility = "visible";
-		// 	} else {
-		// 		topWidget.style.visibility = "hidden";
-		// 	}
-		// });
 	}
 
 	public isPreview(markdownView: MarkdownView) {
@@ -116,7 +102,7 @@ export default class ScrollToTopPlugin extends Plugin {
 
 	public removeButton(id: string, curWindow?: Window) {
 		let curWin = curWindow || window;
-		const element = curWin.document.getElementById(id);
+		const element = curWin.activeDocument.getElementById(id);
 		if (element) {
 			element.remove();
 		}
@@ -172,31 +158,29 @@ export default class ScrollToTopPlugin extends Plugin {
 		this.addSettingTab(new ScrollToTopSettingTab(this.app, this));
 		this.app.workspace.onLayoutReady(() => {
 			this.createButton();
-			
+
 			// when opening new file
 			this.registerEvent(
 				this.app.workspace.on("file-open", () => {
-					if (
-						(
-							this.app as any
-						).workspace.activeLeaf.view.getViewType() === "empty"
-					) {
+					const activeLeaf =
+						app.workspace.getActiveViewOfType(MarkdownView);
+					if (!activeLeaf) {
 						let BottomButton =
-							document.getElementById("__C_scrollToBottom");
+							activeDocument.getElementById("__C_scrollToBottom");
 						if (BottomButton)
 							BottomButton.style.visibility = "hidden";
 
 						let TopButton =
-							document.getElementById("__C_scrollToTop");
+							activeDocument.getElementById("__C_scrollToTop");
 						if (TopButton) TopButton.style.visibility = "hidden";
 					} else {
 						let BottomButton =
-							document.getElementById("__C_scrollToBottom");
+							activeDocument.getElementById("__C_scrollToBottom");
 						if (BottomButton)
 							BottomButton.style.visibility = "visible";
 
 						let TopButton =
-							document.getElementById("__C_scrollToTop");
+							activeDocument.getElementById("__C_scrollToTop");
 						if (TopButton) TopButton.style.visibility = "visible";
 					}
 				})
@@ -263,9 +247,9 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 	}
 
 	createSpanWithLinks(text: string, href: string, linkText: string): any {
-		const span = document.createElement("span");
+		const span = activeDocument.createElement("span");
 		span.innerText = text;
-		const link = document.createElement("a");
+		const link = activeDocument.createElement("a");
 		link.href = href;
 		link.innerText = linkText;
 		span.appendChild(link);
