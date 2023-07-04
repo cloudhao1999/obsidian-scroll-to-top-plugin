@@ -16,7 +16,8 @@ export const injectSurfingComponent = (top: boolean = true) => {
 		// fetch display attr in parent workspace-leaf
 		const workspaceLeafElem = item.parentElement.parentElement.parentElement
 		const display = workspaceLeafElem.style?.display;
-		return display != 'none';
+		const modActive = workspaceLeafElem.classList.contains("mod-active");
+		return display != 'none' && modActive;
 	}) as any;
 
 	if (webView) {
