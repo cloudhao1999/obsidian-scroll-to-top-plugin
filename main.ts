@@ -7,6 +7,7 @@ import {
 	Setting,
 } from "obsidian";
 import { ScrollToTopSettingType, scrollToTopSetting } from "./src/setting";
+import { injectSurfingComponent, isContainSurfingWebview } from "plugins/surfing";
 
 const ROOT_WORKSPACE_CLASS = ".mod-vertical.mod-root";
 
@@ -34,6 +35,8 @@ export default class ScrollToTopPlugin extends Plugin {
 			// not limited to the start of the editor text as with editor.exec("goStart");
 			editor.scrollTo(0, 0);
 			this.isPreview(markdownView) && preview.applyScroll(0);
+		} else if (isContainSurfingWebview(this.settings)) {
+			injectSurfingComponent(true);
 		}
 	}
 
@@ -55,6 +58,8 @@ export default class ScrollToTopPlugin extends Plugin {
 					}
 				});
 			}
+		} else if (isContainSurfingWebview(this.settings)) {
+			injectSurfingComponent(false);
 		}
 	}
 
@@ -90,7 +95,7 @@ export default class ScrollToTopPlugin extends Plugin {
 
 		const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
 		//hidden at start if empty tab
-		if (!activeLeaf) {
+		if (!activeLeaf && !isContainSurfingWebview(this.settings)) {
 			topWidget.style.visibility = "hidden";
 		}
 	}
@@ -167,7 +172,7 @@ export default class ScrollToTopPlugin extends Plugin {
 					let BottomButton =
 						activeDocument.querySelector(".div-scrollToBottom") as HTMLElement;
 					let TopButton =	activeDocument.querySelector(".div-scrollToTop") as HTMLElement;
-					if (!activeLeaf) {
+					if (!activeLeaf && !isContainSurfingWebview(this.settings)) {
 						if (BottomButton)
 							BottomButton.style.visibility = "hidden";
 						if (TopButton) TopButton.style.visibility = "hidden";
@@ -303,6 +308,19 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.showTooltip)
 					.onChange(async (value) => {
 						this.plugin.settings.showTooltip = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Scroll on WebView (Beta)")
+			.setDesc("Scroll on WebView (Should work with Surfing Plugin).")
+			.addToggle((value) => {
+				value
+					.setValue(this.plugin.settings.enableSurfingPlugin)
+					.onChange(async (value) => {
+						this.plugin.settings.enableSurfingPlugin = value;
 						await this.plugin.saveSettings();
 						this.rebuildButton();
 					});
