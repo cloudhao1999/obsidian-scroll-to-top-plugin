@@ -7,7 +7,10 @@ import {
 	Setting,
 } from "obsidian";
 import { ScrollToTopSettingType, scrollToTopSetting } from "./src/setting";
-import { injectSurfingComponent, isContainSurfingWebview } from "plugins/surfing";
+import {
+	injectSurfingComponent,
+	isContainSurfingWebview,
+} from "plugins/surfing";
 
 const ROOT_WORKSPACE_CLASS = ".mod-vertical.mod-root";
 
@@ -89,13 +92,13 @@ export default class ScrollToTopPlugin extends Plugin {
 
 		let curWindow = config.curWindow || window;
 
-		curWindow.activeDocument.body
+		curWindow.document.body
 			.querySelector(ROOT_WORKSPACE_CLASS)
 			?.insertAdjacentElement("afterbegin", topWidget);
 
 		const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
-		//hidden at start if empty tab
-		if (!activeLeaf && !isContainSurfingWebview(this.settings)) {
+		// uing activeLeaf was introducing bugs between different windows
+		if (this.isNewTab() && !isContainSurfingWebview(this.settings)) {
 			topWidget.style.visibility = "hidden";
 		}
 	}
@@ -158,6 +161,32 @@ export default class ScrollToTopPlugin extends Plugin {
 		}
 	}
 
+	isNewTab() {
+		const leaf = app.workspace.getLeaf(false);
+		const viewState = leaf?.getViewState();
+		const isMD = viewState.type == "markdown";
+		const view = leaf?.view;
+		return !isMD || view?.getViewType() === "empty";
+	}
+
+	toggleIconView() {
+		const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
+		let BottomButton = activeDocument.querySelector(
+			".div-scrollToBottom"
+		) as HTMLElement;
+		let TopButton = activeDocument.querySelector(
+			".div-scrollToTop"
+		) as HTMLElement;
+		if (this.isNewTab() && !isContainSurfingWebview(this.settings)) {
+			console.log("ici");
+			if (BottomButton) BottomButton.style.visibility = "hidden";
+			if (TopButton) TopButton.style.visibility = "hidden";
+		} else {
+			if (BottomButton) BottomButton.style.visibility = "visible";
+			if (TopButton) TopButton.style.visibility = "visible";
+		}
+	}
+
 	async onload() {
 		await this.loadSettings();
 		this.addSettingTab(new ScrollToTopSettingTab(this.app, this));
@@ -167,20 +196,7 @@ export default class ScrollToTopPlugin extends Plugin {
 			// when opening new file
 			this.registerEvent(
 				this.app.workspace.on("file-open", () => {
-					const activeLeaf =
-						app.workspace.getActiveViewOfType(MarkdownView);
-					let BottomButton =
-						activeDocument.querySelector(".div-scrollToBottom") as HTMLElement;
-					let TopButton =	activeDocument.querySelector(".div-scrollToTop") as HTMLElement;
-					if (!activeLeaf && !isContainSurfingWebview(this.settings)) {
-						if (BottomButton)
-							BottomButton.style.visibility = "hidden";
-						if (TopButton) TopButton.style.visibility = "hidden";
-					} else {
-						if (BottomButton)
-							BottomButton.style.visibility = "visible";
-						if (TopButton) TopButton.style.visibility = "visible";
-					}
+					this.toggleIconView();
 				})
 			);
 		});
@@ -201,6 +217,7 @@ export default class ScrollToTopPlugin extends Plugin {
 		this.app.workspace.on("window-open", (win, window) => {
 			this.windowSet.add(window);
 			this.createButton(window);
+			this.toggleIconView();
 		});
 		this.app.workspace.on("window-close", (win, window) => {
 			this.windowSet.delete(window);
