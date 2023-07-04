@@ -164,23 +164,16 @@ export default class ScrollToTopPlugin extends Plugin {
 				this.app.workspace.on("file-open", () => {
 					const activeLeaf =
 						app.workspace.getActiveViewOfType(MarkdownView);
+					let BottomButton =
+						activeDocument.querySelector(".div-scrollToBottom") as HTMLElement;
+					let TopButton =	activeDocument.querySelector(".div-scrollToTop") as HTMLElement;
 					if (!activeLeaf) {
-						let BottomButton =
-							activeDocument.getElementById("__C_scrollToBottom");
 						if (BottomButton)
 							BottomButton.style.visibility = "hidden";
-
-						let TopButton =
-							activeDocument.getElementById("__C_scrollToTop");
 						if (TopButton) TopButton.style.visibility = "hidden";
 					} else {
-						let BottomButton =
-							activeDocument.getElementById("__C_scrollToBottom");
 						if (BottomButton)
 							BottomButton.style.visibility = "visible";
-
-						let TopButton =
-							activeDocument.getElementById("__C_scrollToTop");
 						if (TopButton) TopButton.style.visibility = "visible";
 					}
 				})
