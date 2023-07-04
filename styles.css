@@ -54,6 +54,8 @@ settings:
 
 /* 	In case not using the style settings plugin */
 :root {
+	--scroll-to-cursor-bottom: 15.05em;
+	--scroll-to-cursor-left: 2.05em;
 	--scroll-to-bottom-bottom: 2.65em;
 	--scroll-to-bottom-left: 2.05em;
 	--scroll-to-top-bottom: 5.75em;
@@ -76,6 +78,13 @@ settings:
 	position: absolute;
 	bottom: var(--scroll-to-bottom-bottom);
 	right: var(--scroll-to-bottom-left);
+	z-index: 99;
+}
+
+.div-scrollToCursor {
+	position: absolute;
+	bottom: var(--scroll-to-cursor-bottom);
+	right: var(--scroll-to-cursor-left);
 	z-index: 99;
 }
 
@@ -136,6 +145,36 @@ settings:
 	margin-right: 3px;
 	width: var(--scroll-to-bottom-width);
 	height: var(--scroll-to-bottom-height);
+	border-radius: 3px;
+	font-size: initial !important;
+	background-color: var(--background-primary-alt);
+}
+
+#__C_scrollToCursor {
+	width: auto;
+	height: auto;
+	padding: 3px;
+	display: grid;
+	user-select: none;
+	border-radius: 6px;
+	transition: 200ms ease;
+	min-width: fit-content;
+	justify-content: space-around;
+	z-index: var(--layer-status-bar);
+	box-shadow: 0px 3px 32px rgb(31 38 135 / 15%);
+	border: 1px solid var(--background-modifier-border);
+}
+
+#__C_scrollToCursor .buttonItem {
+	margin: 2px;
+	border: none;
+	cursor: pointer;
+	padding: 5px 6px;
+	box-shadow: none;
+	margin-left: 3px;
+	margin-right: 3px;
+	width: var(--scroll-to-cursor-width);
+	height: var(--scroll-to-cursor-height);
 	border-radius: 3px;
 	font-size: initial !important;
 	background-color: var(--background-primary-alt);

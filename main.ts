@@ -28,16 +28,53 @@ export default class ScrollToTopPlugin extends Plugin {
 		});
 	}
 
-	private scrollToTop() {
+	private scrollToCursor() {
 		const markdownView =
 			this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (markdownView) {
 			const editor = markdownView.editor;
-			const preview = markdownView.previewMode;
+			const anchor = editor.getCursor("anchor");
+			const head = editor.getCursor("head");
+			// setCursor or setSelection are doing a scroll (not centered) if out of view.
+			// so with a timer the other scroll done, this scroll is ignored and of course cursor pos is updated
+			setTimeout(async () => {
+				editor.setSelection(anchor, head);
+			}, 200);
+			editor.scrollIntoView(
+				{
+					from: anchor,
+					to: head,
+				},
+				true
+			);
+			// get back the focus on activeLeaf before to set the cursor (after timer)
+			this.app.workspace.setActiveLeaf(markdownView!.leaf, {
+				focus: true,
+			});
+		} else if (isContainSurfingWebview(this.settings)) {
+			injectSurfingComponent(false);
+		}
+	}
 
-			// not limited to the start of the editor text as with editor.exec("goStart");
-			editor.scrollTo(0, 0);
-			this.isPreview(markdownView) && preview.applyScroll(0);
+	private scrollToTop() {
+		const markdownView =
+			this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (markdownView) {
+			const preview = markdownView.previewMode;
+			if (!this.isPreview(markdownView)) {
+				const editor = markdownView.editor;
+				// cursor set to start
+				setTimeout(async () => {
+					editor.setCursor(0, 0);
+				}, 200);
+				// not limited to the start of the editor text as with editor.exec("goStart");
+				editor.scrollTo(0, 0);
+				this.app.workspace.setActiveLeaf(markdownView!.leaf, {
+					focus: true,
+				});
+			} else {
+				this.isPreview(markdownView) && preview.applyScroll(0);
+			}
 		} else if (isContainSurfingWebview(this.settings)) {
 			injectSurfingComponent(true);
 		}
@@ -47,12 +84,26 @@ export default class ScrollToTopPlugin extends Plugin {
 		const markdownView =
 			this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (markdownView) {
-			const editor = markdownView.editor;
 			const preview = markdownView.previewMode;
-
-			editor.exec("goEnd");
-			// the way to solve preview scroll to bottom
-			if (this.isPreview(markdownView)) {
+			if (!this.isPreview(markdownView)) {
+				const editor = markdownView.editor;
+				const lastLine = editor.lastLine();
+				const lastLineChar = editor.getLine(lastLine).length;
+				// cursor set to end
+				setTimeout(async () => {
+					editor.setCursor(lastLine, lastLineChar);
+				}, 200);
+				editor.scrollIntoView(
+					{
+						from: { line: lastLine, ch: 0 },
+						to: { line: lastLine, ch: 0 },
+					},
+					true
+				);
+				this.app.workspace.setActiveLeaf(markdownView!.leaf, {
+					focus: true,
+				});
+			} else {
 				let timer = setInterval(() => {
 					const prevScroll = preview.getScroll();
 					preview.applyScroll(preview.getScroll() + 10);
@@ -120,11 +171,14 @@ export default class ScrollToTopPlugin extends Plugin {
 		const {
 			enabledScrollToTop,
 			enabledScrollToBottom,
+			enabledScrollToCursor,
 			iconScrollToTop,
 			iconScrollToBottom,
+			iconScrollToCursor,
 			showTooltip,
 			scrollTopTooltipText,
 			scrollBottomTooltipText,
+			scrollCursorTooltipText,
 		} = this.settings;
 
 		if (enabledScrollToTop) {
@@ -157,6 +211,22 @@ export default class ScrollToTopPlugin extends Plugin {
 					},
 				},
 				this.scrollToBottom.bind(this)
+			);
+		}
+
+		if (enabledScrollToCursor) {
+			this.createScrollElement(
+				{
+					id: "__C_scrollToCursor",
+					className: "scrollToCursor",
+					icon: iconScrollToCursor,
+					curWindow: window,
+					tooltipConfig: {
+						showTooltip,
+						tooltipText: scrollCursorTooltipText,
+					},
+				},
+				this.scrollToCursor.bind(this)
 			);
 		}
 	}
@@ -212,7 +282,11 @@ export default class ScrollToTopPlugin extends Plugin {
 			"Scroll to Bottom",
 			this.scrollToBottom.bind(this)
 		);
-
+		this.addPluginCommand(
+			"scroll-to-cursor",
+			"Scroll to Cursor",
+			this.scrollToCursor.bind(this)
+		);
 		// add popup window support
 		this.app.workspace.on("window-open", (win, window) => {
 			this.windowSet.add(window);
@@ -243,11 +317,13 @@ export default class ScrollToTopPlugin extends Plugin {
 	onunload() {
 		this.removeButton("__C_scrollToTop");
 		this.removeButton("__C_scrollToBottom");
+		this.removeButton("__C_scrollToCursor");
 		// for popup window
 		if (this.windowSet.size > 0) {
 			this.windowSet.forEach((window) => {
 				this.removeButton("__C_scrollToTop", window);
 				this.removeButton("__C_scrollToBottom", window);
+				this.removeButton("__C_scrollToCursor", window);
 			});
 		}
 	}
@@ -275,12 +351,14 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 	rebuildButton() {
 		this.plugin.removeButton("__C_scrollToTop");
 		this.plugin.removeButton("__C_scrollToBottom");
+		this.plugin.removeButton("__C_scrollToCursor");
 		this.plugin.createButton();
 		// for popup window
 		if (this.plugin.windowSet.size > 0) {
 			this.plugin.windowSet.forEach((window) => {
 				this.plugin.removeButton("__C_scrollToTop", window);
 				this.plugin.removeButton("__C_scrollToBottom", window);
+				this.plugin.removeButton("__C_scrollToCursor", window);
 				this.plugin.createButton(window);
 			});
 		}
@@ -312,6 +390,19 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.enabledScrollToBottom)
 					.onChange(async (value) => {
 						this.plugin.settings.enabledScrollToBottom = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Show scroll to cursor button")
+			.setDesc("Show scroll to cursor button in the right bottom corner.")
+			.addToggle((value) => {
+				value
+					.setValue(this.plugin.settings.enabledScrollToCursor)
+					.onChange(async (value) => {
+						this.plugin.settings.enabledScrollToCursor = value;
 						await this.plugin.saveSettings();
 						this.rebuildButton();
 					});
@@ -370,6 +461,19 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("tooltip config for cursor button")
+			.setDesc("Change tooltip text of scroll to cursor button.")
+			.addText((value) => {
+				value
+					.setValue(this.plugin.settings.scrollCursorTooltipText)
+					.onChange(async (value) => {
+						this.plugin.settings.scrollCursorTooltipText = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton();
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Change icon of scroll to top button")
 			.setDesc(
 				this.createSpanWithLinks(
@@ -402,6 +506,25 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.iconScrollToBottom)
 					.onChange(async (value) => {
 						this.plugin.settings.iconScrollToBottom = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Change icon of scroll to cursor button")
+			.setDesc(
+				this.createSpanWithLinks(
+					"Change icon of scroll to cursor button. You can visit available icons here: ",
+					"https://lucide.dev/",
+					"lucide.dev"
+				)
+			)
+			.addText((value) => {
+				value
+					.setValue(this.plugin.settings.iconScrollToCursor)
+					.onChange(async (value) => {
+						this.plugin.settings.iconScrollToCursor = value;
 						await this.plugin.saveSettings();
 						this.rebuildButton();
 					});
