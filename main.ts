@@ -84,19 +84,15 @@ export default class ScrollToTopPlugin extends Plugin {
 
 		let curWindow = config.curWindow || window;
 
-		curWindow.document.body
+		curWindow.activeDocument.body
 			.querySelector(ROOT_WORKSPACE_CLASS)
 			?.insertAdjacentElement("afterbegin", topWidget);
 
-		curWindow.document.addEventListener("click", function (event) {
-			const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
-
-			if (activeLeaf) {
-				topWidget.style.visibility = "visible";
-			} else {
-				topWidget.style.visibility = "hidden";
-			}
-		});
+		const activeLeaf = app.workspace.getActiveViewOfType(MarkdownView);
+		//hidden at start if empty tab
+		if (!activeLeaf) {
+			topWidget.style.visibility = "hidden";
+		}
 	}
 
 	public isPreview(markdownView: MarkdownView) {
@@ -106,7 +102,7 @@ export default class ScrollToTopPlugin extends Plugin {
 
 	public removeButton(id: string, curWindow?: Window) {
 		let curWin = curWindow || window;
-		const element = curWin.document.getElementById(id);
+		const element = curWin.activeDocument.getElementById(id);
 		if (element) {
 			element.remove();
 		}
@@ -162,7 +158,28 @@ export default class ScrollToTopPlugin extends Plugin {
 		this.addSettingTab(new ScrollToTopSettingTab(this.app, this));
 		this.app.workspace.onLayoutReady(() => {
 			this.createButton();
+
+			// when opening new file
+			this.registerEvent(
+				this.app.workspace.on("file-open", () => {
+					const activeLeaf =
+						app.workspace.getActiveViewOfType(MarkdownView);
+					let BottomButton =
+						activeDocument.querySelector(".div-scrollToBottom") as HTMLElement;
+					let TopButton =	activeDocument.querySelector(".div-scrollToTop") as HTMLElement;
+					if (!activeLeaf) {
+						if (BottomButton)
+							BottomButton.style.visibility = "hidden";
+						if (TopButton) TopButton.style.visibility = "hidden";
+					} else {
+						if (BottomButton)
+							BottomButton.style.visibility = "visible";
+						if (TopButton) TopButton.style.visibility = "visible";
+					}
+				})
+			);
 		});
+
 		// expose plugin commands
 		this.addPluginCommand(
 			"scroll-to-top",
@@ -223,9 +240,9 @@ class ScrollToTopSettingTab extends PluginSettingTab {
 	}
 
 	createSpanWithLinks(text: string, href: string, linkText: string): any {
-		const span = document.createElement("span");
+		const span = activeDocument.createElement("span");
 		span.innerText = text;
-		const link = document.createElement("a");
+		const link = activeDocument.createElement("a");
 		link.href = href;
 		link.innerText = linkText;
 		span.appendChild(link);
