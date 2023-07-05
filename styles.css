@@ -25,7 +25,19 @@ settings:
         title: Scroll to bottom right position placement
         type: variable-number
         default: 2.05
-        format: em 
+        format: em
+	-
+		id: scroll-to-cursor-bottom
+		title: Scroll to cursor bottom position placement
+		type: variable-number
+		default: 15.05
+		format: em
+	-
+		id: scroll-to-cursor-left
+		title: Scroll to cursor right position placement
+		type: variable-number
+		default: 2.05
+		format: em
 	-
         id: scroll-to-top-width
         title: Scroll to top button width
@@ -50,6 +62,19 @@ settings:
 		type: variable-number
 		default: 1.875
 		format: em
+	-
+		id: scroll-to-cursor-width
+		title: Scroll to cursor button width
+		type: variable-number
+		default: 1.875
+		format: em
+	-
+		id: scroll-to-cursor-height
+		title: Scroll to cursor button height
+		type: variable-number
+		default: 1.875
+		format: em
+	
 */
 
 /* 	In case not using the style settings plugin */
@@ -65,6 +90,8 @@ settings:
 	--scroll-to-top-height: var(--scroll-input-width);
 	--scroll-to-bottom-width: var(--scroll-input-width);
 	--scroll-to-bottom-height: var(--scroll-input-width);
+	--scroll-to-cursor-width: var(--scroll-input-width);
+	--scroll-to-cursor-height: var(--scroll-input-width);
 }
 
 .div-scrollToTop {

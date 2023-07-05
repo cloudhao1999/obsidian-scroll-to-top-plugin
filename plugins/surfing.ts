@@ -1,4 +1,4 @@
-import { ScrollToTopSettingType } from "../src/setting";
+import { ScrollToTopSettingType } from 'types';
 
 // judge if surfing plugin is enabled
 export const isContainSurfingWebview = (settings: ScrollToTopSettingType) => {
