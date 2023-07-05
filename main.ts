@@ -42,8 +42,6 @@ export default class ScrollToTopPlugin extends Plugin {
 			this.app.workspace.setActiveLeaf(markdownView!.leaf, {
 				focus: true,
 			});
-		} else if (isContainSurfingWebview(this.settings)) {
-			injectSurfingComponent(false);
 		}
 	}
 
@@ -65,8 +63,6 @@ export default class ScrollToTopPlugin extends Plugin {
 			} else {
 				isPreview(markdownView) && preview.applyScroll(0);
 			}
-		} else if (isContainSurfingWebview(this.settings)) {
-			injectSurfingComponent(true);
 		}
 	}
 
@@ -101,8 +97,6 @@ export default class ScrollToTopPlugin extends Plugin {
 					}
 				});
 			}
-		} else if (isContainSurfingWebview(this.settings)) {
-			injectSurfingComponent(false);
 		}
 	}
 
@@ -137,7 +131,7 @@ export default class ScrollToTopPlugin extends Plugin {
 			?.insertAdjacentElement("afterbegin", topWidget);
 
 		// uing activeLeaf was introducing bugs between different windows
-		if (this.isNewTab() && !isContainSurfingWebview(this.settings)) {
+		if (this.isNewTab()) {
 			topWidget.style.visibility = "hidden";
 		}
 	}
@@ -300,11 +294,11 @@ export default class ScrollToTopPlugin extends Plugin {
 		});
 
 		// listen change of MarkdownViewModeType
-		this.registerEvent(
-			this.app.workspace.on("layout-change", () => {
-				this.toggleIconView();
-			})
-		);
+		// this.registerEvent(
+		// 	this.app.workspace.on("layout-change", () => {
+		// 		this.toggleIconView();
+		// 	})
+		// );
 
 		setTimeout(() => {
 			this.app.workspace.trigger("css-change");
