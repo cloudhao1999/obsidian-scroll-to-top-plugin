@@ -131,13 +131,14 @@ export default class ScrollToTopPlugin extends Plugin {
 		}
 
 		let curWindow = config.curWindow || window;
+		const markdownView = this.getActiveViewOfType();
 
 		curWindow.document.body
 			.querySelector(ROOT_WORKSPACE_CLASS)
 			?.insertAdjacentElement("afterbegin", topWidget);
 
-		// uing activeLeaf was introducing bugs between different windows
-		if (this.isNewTab() && !isContainSurfingWebview(this.settings)) {
+		// fix bug when the leaf was pinned caused Obsidian stuck
+		if (!markdownView && !isContainSurfingWebview(this.settings)) {
 			topWidget.style.visibility = "hidden";
 		}
 	}
@@ -218,14 +219,6 @@ export default class ScrollToTopPlugin extends Plugin {
 		}
 	}
 
-	isNewTab() {
-		const leaf = app.workspace.getLeaf(false);
-		const viewState = leaf?.getViewState();
-		const isMD = viewState.type == "markdown";
-		const view = leaf?.view;
-		return !isMD || view?.getViewType() === "empty";
-	}
-
 	toggleIconView() {
 		let BottomButton = activeDocument.querySelector(
 			".div-scrollToBottom"
@@ -236,8 +229,9 @@ export default class ScrollToTopPlugin extends Plugin {
 		let CursorButton = activeDocument.querySelector(
 			".div-scrollToCursor"
 		) as HTMLElement;
-		
-		if (this.isNewTab() && !isContainSurfingWebview(this.settings)) {
+
+		const markdownView = this.getActiveViewOfType();
+		if (!markdownView && !isContainSurfingWebview(this.settings)) {
 			if (BottomButton) BottomButton.style.visibility = "hidden";
 			if (TopButton) TopButton.style.visibility = "hidden";
 			if (CursorButton) CursorButton.style.visibility = "hidden";
@@ -299,12 +293,9 @@ export default class ScrollToTopPlugin extends Plugin {
 			this.windowSet.delete(window);
 		});
 
-		// listen change of MarkdownViewModeType
-		// this.registerEvent(
-		// 	this.app.workspace.on("layout-change", () => {
-		// 		this.toggleIconView();
-		// 	})
-		// );
+		this.app.workspace.on("layout-change", () => {
+			this.toggleIconView();
+		})
 
 		setTimeout(() => {
 			this.app.workspace.trigger("css-change");
