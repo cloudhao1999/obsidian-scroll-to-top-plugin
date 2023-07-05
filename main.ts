@@ -42,6 +42,8 @@ export default class ScrollToTopPlugin extends Plugin {
 			this.app.workspace.setActiveLeaf(markdownView!.leaf, {
 				focus: true,
 			});
+		} else if (isContainSurfingWebview(this.settings)) {
+			injectSurfingComponent(false);
 		}
 	}
 
@@ -63,6 +65,8 @@ export default class ScrollToTopPlugin extends Plugin {
 			} else {
 				isPreview(markdownView) && preview.applyScroll(0);
 			}
+		} else if (isContainSurfingWebview(this.settings)) {
+			injectSurfingComponent(true);
 		}
 	}
 
@@ -97,6 +101,8 @@ export default class ScrollToTopPlugin extends Plugin {
 					}
 				});
 			}
+		} else if (isContainSurfingWebview(this.settings)) {
+			injectSurfingComponent(false);
 		}
 	}
 
@@ -131,7 +137,7 @@ export default class ScrollToTopPlugin extends Plugin {
 			?.insertAdjacentElement("afterbegin", topWidget);
 
 		// uing activeLeaf was introducing bugs between different windows
-		if (this.isNewTab()) {
+		if (this.isNewTab() && !isContainSurfingWebview(this.settings)) {
 			topWidget.style.visibility = "hidden";
 		}
 	}
