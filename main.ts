@@ -1,12 +1,9 @@
 import { MarkdownView, Plugin, ButtonComponent } from "obsidian";
 
 import { addPluginCommand } from "./src/command";
-import { isPreview, isSource } from "./utils"
-import { ScrollToTopSettingType } from 'types';
-import {
-	ScrollToTopSettingTab,
-	scrollToTopSetting,
-} from "./src/setting";
+import { isPreview, isSource } from "./utils";
+import { ScrollToTopSettingType } from "types";
+import { ScrollToTopSettingTab, scrollToTopSetting } from "./src/setting";
 import {
 	injectSurfingComponent,
 	isContainSurfingWebview,
@@ -122,6 +119,7 @@ export default class ScrollToTopPlugin extends Plugin {
 		let topWidget = createEl("div");
 		topWidget.setAttribute("class", `div-${config.className}`);
 		topWidget.setAttribute("id", config.id);
+		document.documentElement.style.setProperty("--size-ratio", this.settings.resizeButton.toString());
 
 		let button = new ButtonComponent(topWidget);
 		button.setIcon(config.icon).setClass("buttonItem").onClick(fn);
@@ -295,7 +293,7 @@ export default class ScrollToTopPlugin extends Plugin {
 
 		this.app.workspace.on("layout-change", () => {
 			this.toggleIconView();
-		})
+		});
 
 		setTimeout(() => {
 			this.app.workspace.trigger("css-change");

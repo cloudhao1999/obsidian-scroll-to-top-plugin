@@ -10,4 +10,5 @@ export interface ScrollToTopSettingType {
 	scrollBottomTooltipText: string;
 	scrollCursorTooltipText: string;
 	enableSurfingPlugin: boolean;
+	resizeButton: number;
 }
