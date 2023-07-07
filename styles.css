@@ -79,13 +79,14 @@ settings:
 
 /* 	In case not using the style settings plugin */
 :root {
-	--scroll-to-cursor-bottom: 15.05em;
-	--scroll-to-cursor-left: 2.05em;
-	--scroll-to-bottom-bottom: 2.65em;
-	--scroll-to-bottom-left: 2.05em;
-	--scroll-to-top-bottom: 5.75em;
-	--scroll-to-top-left: 2.05em;
-	--scroll-input-width: 1.875em;
+	--scroll-to-cursor-bottom: calc(15.05em * var(--size-ratio));
+	--scroll-to-cursor-left: calc(2.05em * var(--size-ratio));
+	--scroll-to-bottom-bottom: calc(2.65em * var(--size-ratio));
+	--scroll-to-bottom-left: calc(2.05em * var(--size-ratio));
+	--scroll-to-top-bottom: calc(5.75em * var(--size-ratio));
+	--scroll-to-top-left: calc(2.05em * var(--size-ratio));
+	--size-ratio: 0.7;
+	--scroll-input-width: calc(1.875em * var(--size-ratio));
 	--scroll-to-top-width: var(--scroll-input-width);
 	--scroll-to-top-height: var(--scroll-input-width);
 	--scroll-to-bottom-width: var(--scroll-input-width);
