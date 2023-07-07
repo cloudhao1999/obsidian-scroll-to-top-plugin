@@ -79,14 +79,15 @@ settings:
 
 /* 	In case not using the style settings plugin */
 :root {
-	--scroll-to-cursor-bottom: calc(15.05em * var(--size-ratio));
-	--scroll-to-cursor-left: calc(2.05em * var(--size-ratio));
-	--scroll-to-bottom-bottom: calc(2.65em * var(--size-ratio));
-	--scroll-to-bottom-left: calc(2.05em * var(--size-ratio));
-	--scroll-to-top-bottom: calc(5.75em * var(--size-ratio));
-	--scroll-to-top-left: calc(2.05em * var(--size-ratio));
-	--size-ratio: 0.7;
-	--scroll-input-width: calc(1.875em * var(--size-ratio));
+	--size-ratio: 1;
+	--scroll-to-cursor-bottom: 15.05em;
+	--scroll-to-cursor-left: 2.05em;
+	--scroll-to-bottom-bottom: 2.65em;
+	--scroll-to-bottom-left: 2.05em;
+	--scroll-to-top-bottom: 5.75em;
+	--scroll-to-top-left: 2.05em;
+	--scroll-input-width: 1.875em;
+
 	--scroll-to-top-width: var(--scroll-input-width);
 	--scroll-to-top-height: var(--scroll-input-width);
 	--scroll-to-bottom-width: var(--scroll-input-width);
@@ -97,22 +98,22 @@ settings:
 
 .div-scrollToTop {
 	position: absolute;
-	bottom: var(--scroll-to-top-bottom);
-	right: var(--scroll-to-top-left);
+	bottom: calc(var(--scroll-to-top-bottom) * var(--size-ratio));
+	right: calc(var(--scroll-to-top-left) * var(--size-ratio));
 	z-index: 99;
 }
 
 .div-scrollToBottom {
 	position: absolute;
-	bottom: var(--scroll-to-bottom-bottom);
-	right: var(--scroll-to-bottom-left);
+	bottom: calc(var(--scroll-to-bottom-bottom) * var(--size-ratio));
+	right: calc(var(--scroll-to-bottom-left) * var(--size-ratio));
 	z-index: 99;
 }
 
 .div-scrollToCursor {
 	position: absolute;
-	bottom: var(--scroll-to-cursor-bottom);
-	right: var(--scroll-to-cursor-left);
+	bottom: calc(var(--scroll-to-cursor-bottom) * var(--size-ratio));
+	right: calc(var(--scroll-to-cursor-left) * var(--size-ratio));
 	z-index: 99;
 }
 
@@ -139,8 +140,8 @@ settings:
 	margin-left: 3px;
 	margin-right: 3px;
 	border-radius: 3px;
-	width: var(--scroll-to-top-width);
-	height: var(--scroll-to-top-height);
+	width: calc(var(--scroll-to-top-width) * var(--size-ratio));
+	height: calc(var(--scroll-to-top-height) * var(--size-ratio));
 	font-size: initial !important;
 	background-color: var(--background-primary-alt);
 }
@@ -171,8 +172,8 @@ settings:
 	box-shadow: none;
 	margin-left: 3px;
 	margin-right: 3px;
-	width: var(--scroll-to-bottom-width);
-	height: var(--scroll-to-bottom-height);
+	width: calc(var(--scroll-to-bottom-width) * var(--size-ratio));
+	height: calc(var(--scroll-to-bottom-height) * var(--size-ratio));
 	border-radius: 3px;
 	font-size: initial !important;
 	background-color: var(--background-primary-alt);
@@ -201,8 +202,8 @@ settings:
 	box-shadow: none;
 	margin-left: 3px;
 	margin-right: 3px;
-	width: var(--scroll-to-cursor-width);
-	height: var(--scroll-to-cursor-height);
+	width: calc(var(--scroll-to-cursor-width) * var(--size-ratio));
+	height: calc(var(--scroll-to-cursor-height) * var(--size-ratio));
 	border-radius: 3px;
 	font-size: initial !important;
 	background-color: var(--background-primary-alt);

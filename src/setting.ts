@@ -121,7 +121,32 @@ export class ScrollToTopSettingTab extends PluginSettingTab {
 						this.rebuildButton();
 					});
 			});
-
+			
+		new Setting(containerEl)
+			.setName("Resize buttons")
+			.setDesc("Change size of buttons.")
+			.addSlider((slider) => {
+				slider
+					.setLimits(0.7, 1.4, 0.1)
+					.setValue(this.plugin.settings.resizeButton)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						this.plugin.settings.resizeButton = value;
+						await this.plugin.saveSettings();
+						this.rebuildButton();
+					});
+			})
+			.addExtraButton((btn) => {
+				btn.setIcon("reset")
+					.setTooltip("Reset to default")
+					.onClick(async () => {
+						this.plugin.settings.resizeButton =
+							scrollToTopSetting.resizeButton;
+						await this.plugin.saveSettings();
+						this.rebuildButton();
+						this.display()
+					});
+			});
 		new Setting(containerEl)
 			.setName("tooltip config for top button")
 			.setDesc("Change tooltip text of scroll to top button.")
@@ -215,31 +240,6 @@ export class ScrollToTopSettingTab extends PluginSettingTab {
 						this.plugin.settings.iconScrollToCursor = value;
 						await this.plugin.saveSettings();
 						this.rebuildButton();
-					});
-			});
-		new Setting(containerEl)
-			.setName("Resize button")
-			.setDesc("Change size of buttons.")
-			.addSlider((slider) => {
-				slider
-					.setLimits(0.7, 1.4, 0.1)
-					.setValue(this.plugin.settings.resizeButton)
-					.setDynamicTooltip()
-					.onChange(async (value) => {
-						this.plugin.settings.resizeButton = value;
-						await this.plugin.saveSettings();
-						this.rebuildButton();
-					});
-			})
-			.addExtraButton((btn) => {
-				btn.setIcon("reset")
-					.setTooltip("Reset to default")
-					.onClick(async () => {
-						this.plugin.settings.resizeButton =
-							scrollToTopSetting.resizeButton;
-						await this.plugin.saveSettings();
-						this.rebuildButton();
-						this.display()
 					});
 			});
 	}
