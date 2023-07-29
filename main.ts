@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin, ButtonComponent } from "obsidian";
+import { MarkdownView, View, Plugin, ButtonComponent } from "obsidian";
 
 import { addPluginCommand } from "./src/command";
 import { isPreview, isSource } from "./utils";
@@ -137,11 +137,15 @@ export default class ScrollToTopPlugin extends Plugin {
 	public getCurrentViewOfType() {
 		// get the current active view
 		let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		// To distinguish whether the current view is hidden or not markdownView
+		let currentView = this.app.workspace.getActiveViewOfType(View) as MarkdownView;
 		// solve the problem of closing always focus new tab setting
 		if (markdownView !== null) {
 			globalMarkdownView = markdownView;
 		} else {
-			markdownView = globalMarkdownView;
+			if (currentView == null || currentView.file.extension == "md") {
+				markdownView = globalMarkdownView
+			}
 		}
 		return markdownView;
 	}
