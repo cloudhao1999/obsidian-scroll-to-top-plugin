@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin, ButtonComponent, WorkspaceLeaf } from "obsidian";
+import { MarkdownView, Plugin, ButtonComponent } from "obsidian";
 
 import { addPluginCommand } from "./src/command";
 import { isPreview, isSource } from "./utils";
@@ -10,6 +10,8 @@ import {
 } from "plugins/surfing";
 
 const ROOT_WORKSPACE_CLASS = ".mod-vertical.mod-root";
+// solve the problem of closing always focus new tab setting 
+let globalMarkdownView: MarkdownView | null = null;
 
 export default class ScrollToTopPlugin extends Plugin {
 	// scroll to top settings
@@ -18,7 +20,7 @@ export default class ScrollToTopPlugin extends Plugin {
 	windowSet: Set<Window> = new Set();
 
 	private scrollToCursor() {
-		const markdownView = this.getActiveViewOfType();
+		const markdownView = this.getCurrentViewOfType();
 		if (markdownView) {
 			const editor = markdownView.editor;
 			const anchor = editor.getCursor("anchor");
@@ -45,7 +47,7 @@ export default class ScrollToTopPlugin extends Plugin {
 	}
 
 	private scrollToTop() {
-		const markdownView = this.getActiveViewOfType();
+		const markdownView = this.getCurrentViewOfType();
 		if (markdownView) {
 			const preview = markdownView.previewMode;
 			if (isSource(markdownView)) {
@@ -68,7 +70,7 @@ export default class ScrollToTopPlugin extends Plugin {
 	}
 
 	private scrollToBottom = async () => {
-		const markdownView = this.getActiveViewOfType();
+		const markdownView = this.getCurrentViewOfType();
 		if (markdownView) {
 			const file = this.app.workspace.getActiveFile()
 			const content = await (this.app as any).vault.cachedRead(file);
@@ -112,7 +114,7 @@ export default class ScrollToTopPlugin extends Plugin {
 		}
 
 		let curWindow = config.curWindow || window;
-		const markdownView = this.getActiveViewOfType();
+		const markdownView = this.getCurrentViewOfType();
 
 		curWindow.document.body
 			.querySelector(ROOT_WORKSPACE_CLASS)
@@ -132,23 +134,16 @@ export default class ScrollToTopPlugin extends Plugin {
 		}
 	}
 
-	public getActiveViewOfType() {
-		type MarkdownViewMixin = MarkdownView & {
-			leaf: {
-				pinned: boolean;
-			}
-		}
-		let markdownView: MarkdownViewMixin | null = null;
-		markdownView = this.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownViewMixin
-		const isPinned = markdownView?.leaf.pinned;
-		if (isPinned || isPinned === undefined) {
-			return this.app.workspace.getActiveViewOfType(MarkdownView);
+	public getCurrentViewOfType() {
+		// get the current active view
+		let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		// solve the problem of closing always focus new tab setting
+		if (markdownView !== null) {
+			globalMarkdownView = markdownView;
 		} else {
-			let thisPaneLeaf: WorkspaceLeaf = this.app.workspace.getLeaf(false);
-			const viewState = thisPaneLeaf.getViewState();
-			markdownView = viewState.type === "markdown" ? thisPaneLeaf.view as MarkdownViewMixin : null;
-			return markdownView;
+			markdownView = globalMarkdownView;
 		}
+		return markdownView;
 	}
 
 	public createButton(window?: Window) {
@@ -226,7 +221,7 @@ export default class ScrollToTopPlugin extends Plugin {
 			".div-scrollToCursor"
 		) as HTMLElement;
 
-		const markdownView = this.getActiveViewOfType();
+		const markdownView = this.getCurrentViewOfType();
 		if (!markdownView && !isContainSurfingWebview(this.settings)) {
 			if (BottomButton) BottomButton.style.visibility = "hidden";
 			if (TopButton) TopButton.style.visibility = "hidden";
@@ -234,9 +229,6 @@ export default class ScrollToTopPlugin extends Plugin {
 		} else {
 			if (BottomButton) BottomButton.style.visibility = "visible";
 			if (TopButton) TopButton.style.visibility = "visible";
-
-			// Scroll to cursor position (source mode only)
-			const markdownView = this.getActiveViewOfType();
 			if (markdownView && isSource(markdownView)) {
 				if (CursorButton) CursorButton.style.visibility = "visible";
 			} else {
