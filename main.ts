@@ -133,12 +133,22 @@ export default class ScrollToTopPlugin extends Plugin {
 	}
 
 	public getActiveViewOfType() {
-		let thisPaneLeaf: WorkspaceLeaf = this.app.workspace.getLeaf(false)
-		const viewState = thisPaneLeaf.getViewState();
-		let markdownView: MarkdownView | null = null;
-		markdownView = viewState.type === "markdown" ? thisPaneLeaf.view as MarkdownView : null;
-		return markdownView;
-		// return this.app.workspace.getActiveViewOfType(MarkdownView);
+		type MarkdownViewMixin = MarkdownView & {
+			leaf: {
+				pinned: boolean;
+			}
+		}
+		let markdownView: MarkdownViewMixin | null = null;
+		markdownView = this.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownViewMixin
+		const isPinned = markdownView?.leaf.pinned;
+		if (isPinned || isPinned === undefined) {
+			return this.app.workspace.getActiveViewOfType(MarkdownView);
+		} else {
+			let thisPaneLeaf: WorkspaceLeaf = this.app.workspace.getLeaf(false);
+			const viewState = thisPaneLeaf.getViewState();
+			markdownView = viewState.type === "markdown" ? thisPaneLeaf.view as MarkdownViewMixin : null;
+			return markdownView;
+		}
 	}
 
 	public createButton(window?: Window) {
@@ -240,26 +250,29 @@ export default class ScrollToTopPlugin extends Plugin {
 		this.addSettingTab(new ScrollToTopSettingTab(this.app, this));
 		this.app.workspace.onLayoutReady(() => {
 			this.createButton();
-			// layout change is enough no need for open-file
 			this.registerEvent(
 				this.app.workspace.on("file-open", () => {
 					this.toggleIconView();
 				})
 			)
 			// add popup window support
-			this.app.workspace.on("window-open", (win, window) => {
-				this.windowSet.add(window);
-				this.createButton(window);
-				this.toggleIconView();
-			})
-
-			this.app.workspace.on("window-close", (win, window) => {
-				this.windowSet.delete(window);
-			})
-
-			this.app.workspace.on("layout-change", () => {
-				this.toggleIconView();
-			});
+			this.registerEvent(
+				this.app.workspace.on("window-open", (win, window) => {
+					this.windowSet.add(window);
+					this.createButton(window);
+					this.toggleIconView();
+				})
+			);
+			this.registerEvent(
+				this.app.workspace.on("window-close", (win, window) => {
+					this.windowSet.delete(window);
+				})
+			)
+			this.registerEvent(
+				this.app.workspace.on("layout-change", () => {
+					this.toggleIconView();
+				})
+			);
 		});
 
 		// expose plugin commands
