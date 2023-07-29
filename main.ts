@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin, ButtonComponent } from "obsidian";
+import { MarkdownView, Plugin, ButtonComponent, WorkspaceLeaf } from "obsidian";
 
 import { addPluginCommand } from "./src/command";
 import { isPreview, isSource } from "./utils";
@@ -67,37 +67,20 @@ export default class ScrollToTopPlugin extends Plugin {
 		}
 	}
 
-	private scrollToBottom() {
+	private scrollToBottom = async() => {
 		const markdownView = this.getActiveViewOfType();
 		if (markdownView) {
-			const preview = markdownView.previewMode;
-			if (isSource(markdownView)) {
-				const editor = markdownView.editor;
-				const lastLine = editor.lastLine();
-				const lastLineChar = editor.getLine(lastLine).length;
-				// cursor set to end
-				setTimeout(async () => {
-					editor.setCursor(lastLine, lastLineChar);
-				}, 200);
-				editor.scrollIntoView(
-					{
-						from: { line: lastLine, ch: 0 },
-						to: { line: lastLine, ch: 0 },
-					},
-					true
-				);
-				this.app.workspace.setActiveLeaf(markdownView!.leaf, {
-					focus: true,
-				});
-			} else {
-				let timer = setInterval(() => {
-					const prevScroll = preview.getScroll();
-					preview.applyScroll(preview.getScroll() + 10);
-					if (prevScroll >= preview.getScroll()) {
-						clearInterval(timer);
-					}
-				});
+			const file = this.app.workspace.getActiveFile()
+			const content = await (this.app as any).vault.cachedRead(file);
+			const lines = content.split('\n');
+			let numberOfLines = lines.length;
+			//in preview mode don't count empty lines at the end
+			if (markdownView.getMode() === 'preview') {
+				while (numberOfLines > 0 && lines[numberOfLines - 1].trim() === '') {
+					numberOfLines--;
+				}
 			}
+			markdownView.currentMode.applyScroll((numberOfLines - 1))
 		} else if (isContainSurfingWebview(this.settings)) {
 			injectSurfingComponent(false);
 		}
@@ -119,7 +102,7 @@ export default class ScrollToTopPlugin extends Plugin {
 		let topWidget = createEl("div");
 		topWidget.setAttribute("class", `div-${config.className}`);
 		topWidget.setAttribute("id", config.id);
-		document.documentElement.style.setProperty("--size-ratio", this.settings.resizeButton.toString());
+		document.body.style.setProperty("--size-ratio", this.settings.resizeButton.toString());
 
 		let button = new ButtonComponent(topWidget);
 		button.setIcon(config.icon).setClass("buttonItem").onClick(fn);
@@ -150,7 +133,12 @@ export default class ScrollToTopPlugin extends Plugin {
 	}
 
 	public getActiveViewOfType() {
-		return this.app.workspace.getActiveViewOfType(MarkdownView);
+		let thisPaneLeaf: WorkspaceLeaf = this.app.workspace.getLeaf(false)
+		const viewState = thisPaneLeaf.getViewState();
+		let markdownView: MarkdownView | null = null;
+		markdownView = viewState.type === "markdown" ? thisPaneLeaf.view as MarkdownView : null;
+		return markdownView;
+		// return this.app.workspace.getActiveViewOfType(MarkdownView);
 	}
 
 	public createButton(window?: Window) {
@@ -252,12 +240,23 @@ export default class ScrollToTopPlugin extends Plugin {
 		this.addSettingTab(new ScrollToTopSettingTab(this.app, this));
 		this.app.workspace.onLayoutReady(() => {
 			this.createButton();
-			// when opening new file
+			// layout change is enough no need for open-file
 			this.registerEvent(
-				this.app.workspace.on("file-open", () => {
+				this.app.workspace.on("layout-change", () => {
 					this.toggleIconView();
-				})
-			);
+				}))
+			// add popup window support
+			this.registerEvent(
+			this.app.workspace.on("window-open", (win, window) => {
+				this.windowSet.add(window);
+				this.createButton(window);
+				this.toggleIconView();
+			}))
+
+			this.registerEvent(
+			this.app.workspace.on("window-close", (win, window) => {
+				this.windowSet.delete(window);
+			}))
 		});
 
 		// expose plugin commands
@@ -280,22 +279,7 @@ export default class ScrollToTopPlugin extends Plugin {
 			this.scrollToCursor.bind(this)
 		);
 
-		// add popup window support
-		this.app.workspace.on("window-open", (win, window) => {
-			this.windowSet.add(window);
-			this.createButton(window);
-			this.toggleIconView();
-		});
-
-		this.app.workspace.on("window-close", (win, window) => {
-			this.windowSet.delete(window);
-		});
-
-		this.app.workspace.on("layout-change", () => {
-			this.toggleIconView();
-		});
-
-		setTimeout(() => {
+		setTimeout(() => { //linked to commands added
 			this.app.workspace.trigger("css-change");
 		}, 300);
 	}
