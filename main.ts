@@ -67,7 +67,7 @@ export default class ScrollToTopPlugin extends Plugin {
 		}
 	}
 
-	private scrollToBottom = async() => {
+	private scrollToBottom = async () => {
 		const markdownView = this.getActiveViewOfType();
 		if (markdownView) {
 			const file = this.app.workspace.getActiveFile()
@@ -242,21 +242,24 @@ export default class ScrollToTopPlugin extends Plugin {
 			this.createButton();
 			// layout change is enough no need for open-file
 			this.registerEvent(
-				this.app.workspace.on("layout-change", () => {
+				this.app.workspace.on("file-open", () => {
 					this.toggleIconView();
-				}))
+				})
+			)
 			// add popup window support
-			this.registerEvent(
 			this.app.workspace.on("window-open", (win, window) => {
 				this.windowSet.add(window);
 				this.createButton(window);
 				this.toggleIconView();
-			}))
+			})
 
-			this.registerEvent(
 			this.app.workspace.on("window-close", (win, window) => {
 				this.windowSet.delete(window);
-			}))
+			})
+
+			this.app.workspace.on("layout-change", () => {
+				this.toggleIconView();
+			});
 		});
 
 		// expose plugin commands
