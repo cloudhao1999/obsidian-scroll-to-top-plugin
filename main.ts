@@ -143,7 +143,8 @@ export default class ScrollToTopPlugin extends Plugin {
 		if (markdownView !== null) {
 			globalMarkdownView = markdownView;
 		} else {
-			if (currentView == null || currentView.file.extension == "md") {
+			// fix the plugin shutdown problem when the current view is not exist
+			if (currentView == null || currentView?.file?.extension == "md") {
 				markdownView = globalMarkdownView
 			}
 		}
