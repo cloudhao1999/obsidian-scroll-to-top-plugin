@@ -1,4 +1,4 @@
-# Obsidian Scroll To Top Plugin
+# Scroll To Top
 
 This is a plugin for Obsidian that adds a button to scroll to the top of the current note (Not just that).
 
