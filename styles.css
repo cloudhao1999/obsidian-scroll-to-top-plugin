@@ -212,3 +212,21 @@ settings:
 #__C_scrollToBottom button.buttonItem:hover {
 	background-color: var(--background-secondary);
 }
+
+/* Homepage plugin compatibility */
+.scroll-to-top-homepage-compat {
+	z-index: 999 !important; /* Ensure higher z-index than homepage plugin */
+}
+
+/* Adjust positioning when both plugins are active */
+.scroll-to-top-homepage-compat.div-scrollToTop {
+	bottom: calc((var(--scroll-to-top-bottom) + 3em) * var(--size-ratio));
+}
+
+.scroll-to-top-homepage-compat.div-scrollToBottom {
+	bottom: calc((var(--scroll-to-bottom-bottom) + 3em) * var(--size-ratio));
+}
+
+.scroll-to-top-homepage-compat.div-scrollToCursor {
+	bottom: calc((var(--scroll-to-cursor-bottom) + 3em) * var(--size-ratio));
+}

@@ -8,6 +8,10 @@ import {
 	injectSurfingComponent,
 	isContainSurfingWebview,
 } from "plugins/surfing";
+import {
+	handleHomepageCompatibility,
+	addHomepageCompatibilityClass
+} from "plugins/homepage";
 
 const ROOT_WORKSPACE_CLASS = ".mod-vertical.mod-root";
 // solve the problem of closing always focus new tab setting 
@@ -115,6 +119,9 @@ export default class ScrollToTopPlugin extends Plugin {
 
 		let curWindow = config.curWindow || window;
 		const markdownView = this.getCurrentViewOfType();
+
+		// 使用 homepage.ts 中的函数添加兼容性类
+		addHomepageCompatibilityClass(topWidget, this.app);
 
 		curWindow.document.body
 			.querySelector(ROOT_WORKSPACE_CLASS)
@@ -250,6 +257,7 @@ export default class ScrollToTopPlugin extends Plugin {
 			this.registerEvent(
 				this.app.workspace.on("file-open", () => {
 					this.toggleIconView();
+					handleHomepageCompatibility(this);
 				})
 			)
 			// add popup window support
@@ -268,8 +276,18 @@ export default class ScrollToTopPlugin extends Plugin {
 			this.registerEvent(
 				this.app.workspace.on("layout-change", () => {
 					this.toggleIconView();
+					// 当布局变化时处理 Homepage 兼容性
+					handleHomepageCompatibility(this);
 				})
 			);
+			
+			// 初始检查 Homepage 兼容性
+			handleHomepageCompatibility(this);
+			
+			// 额外延迟检查，以捕获较晚加载的 Homepage 插件
+			setTimeout(() => {
+				handleHomepageCompatibility(this);
+			}, 3000);
 		});
 
 		// expose plugin commands
