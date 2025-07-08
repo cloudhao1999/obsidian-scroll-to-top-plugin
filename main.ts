@@ -141,6 +141,39 @@ export default class ScrollToTopPlugin extends Plugin {
 		}
 	}
 
+	private ensureButtonsExist() {
+		// 检查主窗口的按钮是否存在，如果不存在则重新创建
+		const {
+			enabledScrollToTop,
+			enabledScrollToBottom,
+			enabledScrollToCursor,
+		} = this.settings;
+
+		if (enabledScrollToTop && !document.getElementById("__C_scrollToTop")) {
+			this.createButton();
+			return;
+		}
+		if (enabledScrollToBottom && !document.getElementById("__C_scrollToBottom")) {
+			this.createButton();
+			return;
+		}
+		if (enabledScrollToCursor && !document.getElementById("__C_scrollToCursor")) {
+			this.createButton();
+			return;
+		}
+
+		// 检查所有弹出窗口的按钮
+		this.windowSet.forEach((window) => {
+			if (enabledScrollToTop && !window.document.getElementById("__C_scrollToTop")) {
+				this.createButton(window);
+			} else if (enabledScrollToBottom && !window.document.getElementById("__C_scrollToBottom")) {
+				this.createButton(window);
+			} else if (enabledScrollToCursor && !window.document.getElementById("__C_scrollToCursor")) {
+				this.createButton(window);
+			}
+		});
+	}
+
 	public getCurrentViewOfType() {
 		// get the current active view
 		let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -278,6 +311,17 @@ export default class ScrollToTopPlugin extends Plugin {
 					this.toggleIconView();
 					// 当布局变化时处理 Homepage 兼容性
 					handleHomepageCompatibility(this);
+				})
+			);
+			// 监听活动叶子变化事件 - 解决工作区切换时按钮消失的问题
+			this.registerEvent(
+				this.app.workspace.on("active-leaf-change", () => {
+					// 延迟执行以确保DOM已更新
+					setTimeout(() => {
+						this.ensureButtonsExist();
+						this.toggleIconView();
+						handleHomepageCompatibility(this);
+					}, 100);
 				})
 			);
 			
